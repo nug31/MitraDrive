@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Leader - MitraDrive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body class="dashboard-body">
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="logo">
+                <div class="logo-icon"><i class='bx bx-car'></i></div>
+                <span>Mitra<span class="text-primary">Drive</span>.</span>
+                <span class="badge-dashboard">Dashboard</span>
+            </div>
+            <div class="nav-right">
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name" id="leaderName">Nama Leader</span>
+                        <span class="user-role" id="leaderEmail">leader@mitradrive.id</span>
+                    </div>
+                    <div class="avatar" id="leaderAvatar">
+                        <i class='bx bx-user-check'></i>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="btn-logout">
+                    <i class='bx bx-log-out'></i> Keluar
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container dashboard-content">
+        <!-- Dashboard Header -->
+        <header class="dashboard-header-section">
+            <div>
+                <h1>Kelola Pengajuan Peminjaman 📋</h1>
+                <p>Setujui atau tolak permintaan kendaraan operasional SMK Mitra Industri MM2100.</p>
+            </div>
+        </header>
+
+        <!-- Stats Section -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon bg-orange-light text-primary"><i class='bx bx-clipboard'></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Pengajuan</span>
+                    <span class="stat-value" id="statTotal">0</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-yellow-light text-warning"><i class='bx bx-time-five'></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Menunggu</span>
+                    <span class="stat-value" id="statPending">0</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-green-light text-success"><i class='bx bx-check-circle'></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Disetujui</span>
+                    <span class="stat-value" id="statApproved">0</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-red-light text-danger"><i class='bx bx-x-circle'></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Ditolak</span>
+                    <span class="stat-value" id="statRejected">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Panel Table -->
+        <section class="table-section glass-panel-dashboard">
+            <div class="table-header-controls">
+                <div class="search-box">
+                    <i class='bx bx-search'></i>
+                    <input type="text" id="searchInput" placeholder="Cari nama peminjam, kendaraan, tujuan...">
+                </div>
+                <div class="filter-controls">
+                    <select id="filterScope">
+                        <option value="mine">Ditujukan ke Saya</option>
+                        <option value="all">Semua Pengajuan</option>
+                    </select>
+                    <select id="filterStatus">
+                        <option value="all">Semua Status</option>
+                        <option value="menunggu">Menunggu</option>
+                        <option value="disetujui">Disetujui</option>
+                        <option value="ditolak">Ditolak</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="dashboard-table" id="bookingTable">
+                    <thead>
+                        <tr>
+                            <th>Peminjam</th>
+                            <th>Kendaraan</th>
+                            <th>Rencana Perjalanan</th>
+                            <th>Tujuan & Keperluan</th>
+                            <th>Ditujukan Ke</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="7" class="loading-td">
+                                <i class='bx bx-loader-alt bx-spin'></i> Memuat data pengajuan...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Konfirmasi/Tindakan -->
+    <div class="modal-overlay" id="actionModal">
+        <div class="modal-content">
+            <div class="action-icon-wrapper" id="actionIcon">
+                <i class='bx bx-question-mark'></i>
+            </div>
+            <h2 id="actionTitle">Tindakan Pengajuan</h2>
+            <p id="actionSubtitle">Konfirmasi persetujuan peminjaman mobil.</p>
+            
+            <form id="actionForm" class="mt-4 text-left">
+                <input type="hidden" id="actionId">
+                <input type="hidden" id="actionType">
+                <div class="form-group text-left">
+                    <label for="catatan"><i class='bx bx-comment-detail text-primary'></i> Catatan (Opsional)</label>
+                    <textarea id="catatan" placeholder="Tambahkan catatan atau alasan penolakan..." rows="3"></textarea>
+                </div>
+                
+                <div class="modal-buttons mt-6">
+                    <button type="button" class="btn-cancel" id="btnCancelAction">Batal</button>
+                    <button type="submit" class="btn-confirm" id="btnConfirmAction">Konfirmasi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="dashboardToast">
+        <div class="toast-content">
+            <i class='bx bx-check-circle toast-icon text-success'></i>
+            <span id="toastMessage">Berhasil memperbarui data!</span>
+        </div>
+    </div>
+
+    <script type="module" src="js/leader.js"></script>
+</body>
+</html>
