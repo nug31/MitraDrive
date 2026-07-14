@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - MitraDrive</title>
+    <meta name="description" content="Panel Admin MitraDrive untuk mengelola seluruh pengajuan peminjaman kendaraan operasional.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon"><i class='bx bx-car'></i></div>
+                <span>Mitra<span class="text-primary">Drive</span>.</span>
+            </div>
+            <span class="badge-admin">Admin</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="overview" id="navOverview">
+                <i class='bx bx-grid-alt'></i>
+                <span>Overview</span>
+            </a>
+            <a href="#" class="nav-item" data-page="bookings" id="navBookings">
+                <i class='bx bx-clipboard'></i>
+                <span>Semua Pengajuan</span>
+                <span class="nav-badge" id="pendingBadge">0</span>
+            </a>
+            <a href="#" class="nav-item" data-page="approved" id="navApproved">
+                <i class='bx bx-check-shield'></i>
+                <span>Disetujui</span>
+            </a>
+            <a href="#" class="nav-item" data-page="rejected" id="navRejected">
+                <i class='bx bx-shield-x'></i>
+                <span>Ditolak</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="admin-profile">
+                <div class="admin-avatar"><i class='bx bx-shield-quarter'></i></div>
+                <div class="admin-info">
+                    <span class="admin-name" id="adminName">Administrator</span>
+                    <span class="admin-email" id="adminEmail">admin@mitradrive.id</span>
+                </div>
+            </div>
+            <button id="logoutBtn" class="btn-logout-sidebar">
+                <i class='bx bx-log-out'></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main" id="adminMain">
+
+        <!-- Top Bar -->
+        <header class="admin-topbar">
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class='bx bx-menu'></i>
+            </button>
+            <div class="topbar-title">
+                <h2 id="pageTitle">Overview Dashboard</h2>
+                <span id="pageSubtitle">Selamat datang di panel admin MitraDrive</span>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn-refresh" id="btnRefresh" title="Refresh Data">
+                    <i class='bx bx-refresh'></i>
+                </button>
+                <div class="last-updated" id="lastUpdated">-</div>
+            </div>
+        </header>
+
+        <!-- Page: Overview -->
+        <section class="admin-page active" id="pageOverview">
+            <div class="admin-stats-grid">
+                <div class="admin-stat-card stat-total">
+                    <div class="stat-card-icon"><i class='bx bx-clipboard'></i></div>
+                    <div class="stat-card-info">
+                        <span class="stat-card-value" id="statTotal">0</span>
+                        <span class="stat-card-label">Total Pengajuan</span>
+                    </div>
+                </div>
+                <div class="admin-stat-card stat-pending">
+                    <div class="stat-card-icon"><i class='bx bx-time-five'></i></div>
+                    <div class="stat-card-info">
+                        <span class="stat-card-value" id="statPending">0</span>
+                        <span class="stat-card-label">Menunggu Persetujuan</span>
+                    </div>
+                </div>
+                <div class="admin-stat-card stat-approved">
+                    <div class="stat-card-icon"><i class='bx bx-check-circle'></i></div>
+                    <div class="stat-card-info">
+                        <span class="stat-card-value" id="statApproved">0</span>
+                        <span class="stat-card-label">Disetujui</span>
+                    </div>
+                </div>
+                <div class="admin-stat-card stat-rejected">
+                    <div class="stat-card-icon"><i class='bx bx-x-circle'></i></div>
+                    <div class="stat-card-info">
+                        <span class="stat-card-value" id="statRejected">0</span>
+                        <span class="stat-card-label">Ditolak</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-panel">
+                <div class="panel-header">
+                    <h3><i class='bx bx-bell text-warning'></i> Perlu Tindakan Segera</h3>
+                    <span class="panel-badge" id="urgentCount">0 menunggu</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="admin-table" id="pendingTable">
+                        <thead>
+                            <tr>
+                                <th>Peminjam</th>
+                                <th>Kendaraan</th>
+                                <th>Tanggal Dinas</th>
+                                <th>Approver</th>
+                                <th>Dibuat</th>
+                                <th>Aksi Cepat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingTableBody">
+                            <tr><td colspan="6" class="loading-td"><i class='bx bx-loader-alt bx-spin'></i> Memuat...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page: All Bookings -->
+        <section class="admin-page" id="pageBookings">
+            <div class="admin-panel">
+                <div class="panel-header">
+                    <h3><i class='bx bx-list-ul'></i> Semua Pengajuan Peminjaman</h3>
+                </div>
+                <div class="table-controls">
+                    <div class="search-box">
+                        <i class='bx bx-search'></i>
+                        <input type="text" id="searchAllInput" placeholder="Cari peminjam, kendaraan, tujuan...">
+                    </div>
+                    <div class="filter-group">
+                        <select id="filterAllStatus">
+                            <option value="all">Semua Status</option>
+                            <option value="menunggu">Menunggu</option>
+                            <option value="disetujui">Disetujui</option>
+                            <option value="ditolak">Ditolak</option>
+                        </select>
+                        <select id="filterAllLeader">
+                            <option value="all">Semua Approver</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="admin-table" id="allBookingsTable">
+                        <thead>
+                            <tr>
+                                <th>Peminjam</th>
+                                <th>Kendaraan</th>
+                                <th>Rencana Perjalanan</th>
+                                <th>Tujuan &amp; Keperluan</th>
+                                <th>Approver</th>
+                                <th>Status</th>
+                                <th>Aksi Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allBookingsBody">
+                            <tr><td colspan="7" class="loading-td"><i class='bx bx-loader-alt bx-spin'></i> Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page: Approved -->
+        <section class="admin-page" id="pageApproved">
+            <div class="admin-panel">
+                <div class="panel-header">
+                    <h3><i class='bx bx-check-shield text-success'></i> Pengajuan Disetujui</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Peminjam</th>
+                                <th>Kendaraan</th>
+                                <th>Tanggal Dinas</th>
+                                <th>Tujuan</th>
+                                <th>Approver</th>
+                                <th>Catatan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="approvedBody">
+                            <tr><td colspan="7" class="loading-td"><i class='bx bx-loader-alt bx-spin'></i> Memuat...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page: Rejected -->
+        <section class="admin-page" id="pageRejected">
+            <div class="admin-panel">
+                <div class="panel-header">
+                    <h3><i class='bx bx-shield-x text-danger'></i> Pengajuan Ditolak</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Peminjam</th>
+                                <th>Kendaraan</th>
+                                <th>Tanggal Dinas</th>
+                                <th>Tujuan</th>
+                                <th>Approver</th>
+                                <th>Alasan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rejectedBody">
+                            <tr><td colspan="7" class="loading-td"><i class='bx bx-loader-alt bx-spin'></i> Memuat...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Action Modal -->
+    <div class="modal-overlay" id="actionModal">
+        <div class="modal-content admin-modal">
+            <div class="action-icon-wrapper" id="actionIcon">
+                <i class='bx bx-question-mark'></i>
+            </div>
+            <h2 id="actionTitle">Tindakan Admin</h2>
+            <p id="actionSubtitle">Konfirmasi tindakan untuk pengajuan ini.</p>
+
+            <div class="booking-preview" id="bookingPreview"></div>
+
+            <form id="actionForm" class="mt-4 text-left">
+                <input type="hidden" id="actionId">
+                <input type="hidden" id="actionType">
+                <div class="form-group text-left">
+                    <label for="catatan"><i class='bx bx-comment-detail text-primary'></i> Catatan Admin (Opsional)</label>
+                    <textarea id="catatan" placeholder="Tambahkan catatan atau alasan keputusan..." rows="3"></textarea>
+                </div>
+                <div class="modal-buttons mt-6">
+                    <button type="button" class="btn-cancel" id="btnCancelAction">Batal</button>
+                    <button type="submit" class="btn-confirm" id="btnConfirmAction">Konfirmasi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="adminToast">
+        <div class="toast-content">
+            <i class='bx bx-check-circle toast-icon text-success'></i>
+            <span id="toastMessage">Berhasil!</span>
+        </div>
+    </div>
+
+    <script type="module" src="js/admin.js"></script>
+</body>
+</html>

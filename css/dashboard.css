@@ -484,18 +484,217 @@
 .mt-4 { margin-top: 1rem; }
 .mt-6 { margin-top: 1.5rem; }
 
+/* ========================================
+   RESPONSIVE — Dashboard Tablet (max 768px)
+   ======================================== */
 @media (max-width: 768px) {
+    .dashboard-content {
+        padding: 20px 16px;
+    }
+
+    .dashboard-header-section h1 {
+        font-size: 1.5rem;
+    }
+
+    .dashboard-header-section p {
+        font-size: 0.9rem;
+    }
+
+    /* Stats */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        padding: 16px;
+        border-radius: 16px;
+        gap: 12px;
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+    }
+
+    /* Table Section */
+    .table-section {
+        padding: 16px !important;
+        border-radius: 20px !important;
+    }
+
     .table-header-controls {
         flex-direction: column;
         align-items: stretch;
+        gap: 12px;
     }
+
     .search-box {
         max-width: none;
+        min-width: auto;
     }
+
     .filter-controls {
         justify-content: space-between;
     }
+
     .filter-controls select {
         flex: 1;
+        font-size: 0.85rem;
+        padding: 10px 32px 10px 12px;
+    }
+
+    /* Table → Mobile Card View */
+    .dashboard-table thead {
+        display: none;
+    }
+
+    .dashboard-table tbody tr {
+        display: block;
+        background: white;
+        border: 1px solid #f1f5f9;
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 12px;
+        box-shadow: var(--shadow-soft);
+    }
+
+    .dashboard-table tbody tr:hover {
+        background: white;
+    }
+
+    .dashboard-table td {
+        display: flex;
+        padding: 6px 0;
+        border-bottom: none;
+        align-items: flex-start;
+    }
+
+    .dashboard-table td::before {
+        content: attr(data-label);
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        min-width: 100px;
+        padding-top: 2px;
+    }
+
+    /* Action buttons full width on mobile */
+    .action-buttons {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .btn-approve,
+    .btn-reject {
+        width: 40px;
+        height: 36px;
+    }
+
+    /* Modal */
+    .action-icon-wrapper {
+        width: 56px;
+        height: 56px;
+        font-size: 2rem;
+    }
+
+    .modal-buttons {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .btn-cancel,
+    .btn-confirm {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+
+    /* Badge */
+    .badge-dashboard {
+        font-size: 0.6rem;
+        padding: 2px 6px;
+    }
+
+    .catatan-leader-box {
+        max-width: 100%;
     }
 }
+
+/* ========================================
+   RESPONSIVE — Dashboard Small Phone (max 480px)
+   ======================================== */
+@media (max-width: 480px) {
+    .dashboard-header-section {
+        margin-bottom: 20px;
+    }
+
+    .dashboard-header-section h1 {
+        font-size: 1.25rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .stat-card {
+        padding: 12px;
+        gap: 8px;
+    }
+
+    .stat-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+        border-radius: 10px;
+    }
+
+    .stat-value {
+        font-size: 1.1rem;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+    }
+
+    .dashboard-table td::before {
+        min-width: 80px;
+        font-size: 0.65rem;
+    }
+
+    .table-section {
+        padding: 12px !important;
+    }
+
+    .search-box input {
+        font-size: 0.85rem;
+        padding: 10px 14px 10px 40px;
+    }
+
+    .search-box i {
+        left: 12px;
+        font-size: 1rem;
+    }
+
+    .toast {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        padding: 12px 16px;
+        font-size: 0.85rem;
+        border-radius: 12px;
+    }
+}
+

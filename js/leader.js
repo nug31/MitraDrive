@@ -17,6 +17,9 @@ const leadersToCreate = [
     { name: "Heru Triatmo", email: "heru.triatmo@mitradrive.id", password: "MI2100heru" }
 ];
 
+// Admin account
+const adminAccount = { name: "Administrator", email: "admin@mitradrive.id", password: "MitraAdmin2100", role: "admin" };
+
 document.addEventListener('DOMContentLoaded', async () => {
     const loginForm = document.getElementById('loginForm');
     const bookingTable = document.getElementById('bookingTable');
@@ -109,7 +112,12 @@ function initLoginPage() {
 
                 // Check role in user metadata
                 const role = data.user.user_metadata?.role;
-                if (role === 'leader') {
+                if (role === 'admin') {
+                    showToast('Login Admin berhasil! Mengalihkan...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'admin-dashboard.html';
+                    }, 1000);
+                } else if (role === 'leader') {
                     showToast('Login Leader berhasil! Mengalihkan...', 'success');
                     setTimeout(() => {
                         window.location.href = 'leader-dashboard.html';
@@ -169,15 +177,15 @@ function initLoginPage() {
     btnInitAuth.addEventListener('click', async () => {
         btnInitAuth.disabled = true;
         initStatus.className = 'init-status loading';
-        initStatus.textContent = 'Mendaftarkan akun-akun leader di Supabase...';
+        initStatus.textContent = 'Mendaftarkan akun-akun leader + admin di Supabase...';
 
         let successCount = 0;
         let skipCount = 0;
         let failCount = 0;
 
+        // Create leader accounts
         for (const leader of leadersToCreate) {
             try {
-                // We attempt to sign up the leader
                 const { data, error } = await supabase.auth.signUp({
                     email: leader.email,
                     password: leader.password,
@@ -204,8 +212,35 @@ function initLoginPage() {
             }
         }
 
+        // Create admin account
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email: adminAccount.email,
+                password: adminAccount.password,
+                options: {
+                    data: {
+                        full_name: adminAccount.name,
+                        role: 'admin'
+                    }
+                }
+            });
+
+            if (error) {
+                if (error.message.includes('already registered')) {
+                    skipCount++;
+                } else {
+                    throw error;
+                }
+            } else {
+                successCount++;
+            }
+        } catch (err) {
+            console.error(`Gagal membuat akun admin:`, err);
+            failCount++;
+        }
+
         initStatus.className = 'init-status success';
-        initStatus.innerHTML = `<i class='bx bx-check-circle'></i> Inisialisasi Selesai!<br>
+        initStatus.innerHTML = `<i class='bx bx-check-circle'></i> Inisialisasi Selesai! (Leader + Admin)<br>
             <span style="font-size:0.75rem; font-weight:400; color:var(--text-muted);">
             Baru: ${successCount} | Sudah ada: ${skipCount} | Gagal: ${failCount}
             </span>`;
@@ -448,42 +483,42 @@ function filterAndRenderTable() {
         }
 
         tr.innerHTML = `
-            <td>
+            <td data-label="Peminjam">
                 <div class="peminjam-cell">
                     <span class="nama">${booking.peminjam_nama}</span>
                     <span class="tanggal">Dibuat: ${tglBuat}</span>
                 </div>
             </td>
-            <td>
+            <td data-label="Kendaraan">
                 <div class="kendaraan-cell">
                     <span class="nama">${booking.kendaraan_nama}</span>
                     <span class="plat">${booking.kendaraan_plat}</span>
                 </div>
             </td>
-            <td>
+            <td data-label="Rencana">
                 <div class="rencana-cell">
                     <span class="tanggal-dinas">${tglDinas}</span>
                     <span class="jam"><i class='bx bx-time-five'></i> ${booking.jam_mulai} - ${booking.jam_selesai}</span>
                 </div>
             </td>
-            <td>
+            <td data-label="Tujuan">
                 <div class="tujuan-cell">
                     <div class="lokasi">${booking.tujuan}</div>
                     <div class="keperluan">${booking.keperluan}</div>
                 </div>
             </td>
-            <td>
+            <td data-label="Leader">
                 <div class="leader-cell">
                     ${booking.leader_nama}
                 </div>
             </td>
-            <td>
+            <td data-label="Status">
                 <span class="badge-status ${badgeClass}">
                     <i class='bx ${statusIcon}'></i> ${booking.status}
                 </span>
                 ${catatanHtml}
             </td>
-            <td>
+            <td data-label="Aksi">
                 ${actionsHtml}
             </td>
         `;

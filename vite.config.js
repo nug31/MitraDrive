@@ -9,6 +9,7 @@ export default defineConfig({
         main: 'index.html',
         login: 'login.html',
         dashboard: 'leader-dashboard.html',
+        admin: 'admin-dashboard.html',
       }
     }
   }
