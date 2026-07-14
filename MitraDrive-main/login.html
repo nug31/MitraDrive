@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk & Daftar - MitraDrive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body class="login-body">
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="login-header">
+                <a href="index.html" class="back-home">
+                    <i class='bx bx-left-arrow-alt'></i> Kembali ke Form
+                </a>
+                <div class="logo justify-center mt-6">
+                    <div class="logo-icon"><i class='bx bx-car'></i></div>
+                    <span>Mitra<span class="text-primary">Drive</span>.</span>
+                </div>
+                <h2 id="loginTitle">Masuk ke Akun Anda</h2>
+                <p id="loginSubtitle">Silakan masuk untuk mengajukan peminjaman atau menyetujui sebagai leader.</p>
+            </div>
+
+            <!-- Login / Register Tabs -->
+            <div class="login-tabs">
+                <button type="button" class="tab-btn active" id="tabLogin">Masuk</button>
+                <button type="button" class="tab-btn" id="tabRegister">Daftar Peminjam</button>
+            </div>
+
+            <form id="loginForm" class="login-form">
+                <!-- Name Field (Only shown in register tab) -->
+                <div class="form-group" id="nameGroup" style="display: none;">
+                    <label for="fullName"><i class='bx bx-user text-primary'></i> Nama Lengkap</label>
+                    <input type="text" id="fullName" placeholder="contoh: Ahmad Fauzi">
+                </div>
+
+                <div class="form-group">
+                    <label for="email" id="emailLabel"><i class='bx bx-envelope text-primary'></i> Email</label>
+                    <input type="email" id="email" placeholder="contoh: budi@gmail.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password"><i class='bx bx-lock-alt text-primary'></i> Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="password" placeholder="Masukkan password..." required>
+                        <button type="button" id="togglePassword" class="btn-toggle-pw">
+                            <i class='bx bx-show'></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="loginBtn">
+                    Masuk <i class='bx bx-log-in'></i>
+                </button>
+            </form>
+
+            <div class="login-footer" id="leaderInitFooter">
+                <p>Khusus Leader / Approver:</p>
+                <button id="btnInitAuth" class="btn-init-auth">
+                    <i class='bx bx-cog'></i> Inisialisasi Akun Leader
+                </button>
+                <div id="initStatus" class="init-status"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal / Toast -->
+    <div class="toast" id="loginToast">
+        <div class="toast-content">
+            <i class='bx bx-error-circle toast-icon'></i>
+            <span id="toastMessage">Email atau password salah!</span>
+        </div>
+    </div>
+
+    <script type="module" src="js/leader.js"></script>
+</body>
+</html>

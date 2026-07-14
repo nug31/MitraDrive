@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MitraDrive - Peminjaman Mobil Premium</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="logo">
+                <div class="logo-icon"><i class='bx bx-car'></i></div>
+                <span>Mitra<span class="text-primary">Drive</span>.</span>
+            </div>
+            <div class="nav-right" id="navRight">
+                <!-- Guest State -->
+                <a href="login.html" class="btn-leader-login" id="navLoginBtn">
+                    <i class='bx bx-log-in'></i> Masuk / Daftar
+                </a>
+                
+                <!-- Authenticated State -->
+                <div class="user-profile" id="navUserProfile" style="display: none;">
+                    <div class="user-info">
+                        <span class="user-name" id="displayName">Nama User</span>
+                        <span class="user-role" id="displayRole">Peminjam</span>
+                    </div>
+                    <div class="avatar" id="displayAvatar">
+                        <i class='bx bx-user'></i>
+                    </div>
+                </div>
+                
+                <button id="logoutBtn" class="btn-logout" style="display: none; padding: 8px 14px; font-size: 0.85rem;">
+                    <i class='bx bx-log-out'></i> Keluar
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container main-content">
+        <!-- Header -->
+        <header class="app-header">
+            <div>
+                <h1>Mau pinjam mobil apa hari ini? 🚗</h1>
+                <p>Pilih armada operasional untuk mendukung perjalanan dinas Anda.</p>
+            </div>
+        </header>
+
+        <div class="app-grid">
+            <!-- Left Column: Car Selection -->
+            <section class="car-selection">
+                <div class="section-title">
+                    <span class="step-badge">1</span>
+                    <h2>Pilih Kendaraan</h2>
+                </div>
+                
+                <div class="cars-grid" id="carsGrid">
+                    <!-- Car Cards will be injected by JS -->
+                </div>
+            </section>
+
+            <!-- Right Column: Booking Form -->
+            <section class="booking-form-section">
+                <div class="glass-panel">
+                    <div class="section-title">
+                        <span class="step-badge">2</span>
+                        <h2>Detail Perjalanan</h2>
+                    </div>
+                    
+                    <form id="bookingForm" class="booking-form">
+                        <div class="form-group">
+                            <label><i class='bx bx-user text-primary'></i> Nama Lengkap Peminjam</label>
+                            <input type="text" placeholder="Masukkan nama lengkap Anda..." required id="namaPeminjam">
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class='bx bx-calendar-alt text-primary'></i> Tanggal Berangkat</label>
+                            <input type="date" required id="tanggal">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class='bx bx-time-five text-primary'></i> Jam Mulai</label>
+                                <input type="time" required id="jamMulai">
+                            </div>
+                            <div class="form-group">
+                                <label><i class='bx bx-time text-secondary'></i> Jam Selesai</label>
+                                <input type="time" required id="jamSelesai">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class='bx bx-map text-primary'></i> Tujuan</label>
+                            <input type="text" placeholder="Contoh: Kantor Cabang Sudirman" required id="tujuan">
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class='bx bx-message-square-detail text-primary'></i> Keperluan</label>
+                            <textarea placeholder="Deskripsikan keperluan dinas Anda..." rows="3" required id="keperluan"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class='bx bx-user-check text-primary'></i> Pilih Approver (Leader)</label>
+                            <select required id="leader">
+                                <option value="" disabled selected>Pilih Leader...</option>
+                                <optgroup label="── Wakasek ──">
+                                    <option value="Elis Rika Sugiarti|elis.rika@mitradrive.id">Elis Rika Sugiarti — Purchasing</option>
+                                    <option value="Abdul Munir|abdul.munir@mitradrive.id">Abdul Munir — Kesiswaan & GA</option>
+                                    <option value="Hidayat Atori|hidayat.atori@mitradrive.id">Hidayat Atori — Humas & Hubind</option>
+                                    <option value="Nuryana Fitriyani|nuryana.fitriyani@mitradrive.id">Nuryana Fitriyani — Kurikulum</option>
+                                    <option value="Aprilia Rahayu Wilujeng|aprilia.rahayu@mitradrive.id">Aprilia Rahayu Wilujeng — Koordinator HOD</option>
+                                </optgroup>
+                                <optgroup label="── HOD ──">
+                                    <option value="Ryo Maytana|ryo.maytana@mitradrive.id">Ryo Maytana — TKI</option>
+                                    <option value="Okxy Ixganda|okxy.ixganda@mitradrive.id">Okxy Ixganda — TSM</option>
+                                    <option value="Astri Afmi Wulandari|astri.afmi@mitradrive.id">Astri Afmi Wulandari — Listrik</option>
+                                    <option value="Eldha Luvyzha|eldha.luvyzha@mitradrive.id">Eldha Luvyzha — ELIND</option>
+                                    <option value="Kiki Widhia Swara|kiki.widhia@mitradrive.id">Kiki Widhia Swara — Akuntansi</option>
+                                    <option value="Refty Royan|refty.royan@mitradrive.id">Refty Royan — Perhotelan</option>
+                                    <option value="Abdillah Putra|abdillah.putra@mitradrive.id">Abdillah Putra — TKR</option>
+                                    <option value="Heru Triatmo|heru.triatmo@mitradrive.id">Heru Triatmo — Pemesinan</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn-submit" id="submitBtn">
+                            Kirim Pengajuan <i class='bx bx-right-arrow-alt'></i>
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+        <!-- User Booking History Section (Only shown if logged in) -->
+        <section class="user-history-section" id="userHistorySection" style="display: none; margin-top: 40px;">
+            <div class="glass-panel-dashboard" style="padding: 32px;">
+                <div class="section-title">
+                    <span class="step-badge"><i class='bx bx-history'></i></span>
+                    <h2>Riwayat Peminjaman Saya</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="dashboard-table" id="userHistoryTable">
+                        <thead>
+                            <tr>
+                                <th>Kendaraan</th>
+                                <th>Rencana Perjalanan</th>
+                                <th>Tujuan & Keperluan</th>
+                                <th>Approver</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userHistoryBody">
+                            <tr>
+                                <td colspan="5" class="loading-td">
+                                    <i class='bx bx-loader-alt bx-spin'></i> Memuat riwayat peminjaman...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-content">
+            <div class="success-icon">
+                <i class='bx bx-check'></i>
+            </div>
+            <h2>Pengajuan Berhasil!</h2>
+            <p>Permintaan kendaraan <strong id="modalCarName">Mobil</strong> telah dikirim ke <strong id="modalLeader">Leader</strong> untuk disetujui.</p>
+            <button class="btn-primary-solid mt-4" id="closeModalBtn">Selesai</button>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal-overlay" id="errorModal">
+        <div class="modal-content">
+            <div class="success-icon" style="background:#fee2e2; color:#dc2626;">
+                <i class='bx bx-x'></i>
+            </div>
+            <h2>Gagal Mengirim</h2>
+            <p id="errorMessage">Terjadi kesalahan. Coba lagi nanti.</p>
+            <button class="btn-primary-solid mt-4" id="closeErrorBtn">Tutup</button>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
