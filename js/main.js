@@ -132,9 +132,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 data.forEach(booking => {
                     const car = mockCars.find(c => c.name === booking.kendaraan_nama);
                     if (car) {
-                        car.status = 'Dipakai';
-                        car.borrower = booking.peminjam_nama;
-                        car.bookingStatus = booking.status; // 'disetujui' or 'menunggu'
+                        if (booking.status !== 'selesai') {
+                            car.status = 'Dipakai';
+                            car.borrower = booking.peminjam_nama;
+                            car.bookingStatus = booking.status; // 'disetujui' or 'menunggu'
+                        }
                     }
                 });
             }

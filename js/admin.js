@@ -306,6 +306,17 @@ function renderMainTable() {
                     </button>
                 </div>
             `;
+        } else if (booking.status === 'disetujui') {
+            actionsHtml = `
+                <div class="action-buttons">
+                    <button class="btn-approve" onclick="openAdminAction('${booking.id}', 'selesai')" title="Tandai Selesai / Dikembalikan" style="background: var(--primary-color);">
+                        <i class='bx bx-check-double'></i> Selesai
+                    </button>
+                    <button class="btn-revert" onclick="openAdminAction('${booking.id}', 'menunggu')" title="Kembalikan ke Menunggu">
+                        <i class='bx bx-undo'></i> Reset
+                    </button>
+                </div>
+            `;
         } else {
             actionsHtml = `
                 <div class="action-buttons">
@@ -506,6 +517,15 @@ window.openAdminAction = function(id, type) {
         iconWrapper.innerHTML = "<i class='bx bx-x-circle'></i>";
         btnConfirm.className = 'btn-confirm confirm-reject';
         btnConfirm.textContent = 'Tolak Force';
+    } else if (type === 'selesai') {
+        title.textContent = 'Mobil Dikembalikan (Selesai)';
+        subtitle.textContent = 'Tandai bahwa kendaraan ini telah dikembalikan dan tersedia lagi.';
+        iconWrapper.className = 'action-icon-wrapper text-primary';
+        iconWrapper.style.background = '#eff6ff';
+        iconWrapper.innerHTML = "<i class='bx bx-check-double'></i>";
+        btnConfirm.className = 'btn-confirm confirm-approve';
+        btnConfirm.style.background = 'var(--primary-color)';
+        btnConfirm.textContent = 'Tandai Selesai';
     } else if (type === 'menunggu') {
         title.textContent = 'Reset Status Pengajuan';
         subtitle.textContent = 'Kembalikan status pengajuan menjadi "Menunggu" (akan bisa direview ulang oleh leader).';
@@ -524,12 +544,14 @@ window.openAdminAction = function(id, type) {
 // ==========================================
 function getBadgeClass(status) {
     if (status === 'disetujui') return 'badge-disetujui';
+    if (status === 'selesai') return 'badge-disetujui'; // Re-use green color
     if (status === 'ditolak') return 'badge-ditolak';
     return 'badge-menunggu';
 }
 
 function getStatusIcon(status) {
     if (status === 'disetujui') return 'bx-check-circle';
+    if (status === 'selesai') return 'bx-check-double';
     if (status === 'ditolak') return 'bx-x-circle';
     return 'bx-time-five';
 }
