@@ -3,7 +3,7 @@ import { supabase } from './supabase-config.js';
 const mockCars = [
     { id: 1, name: 'Hyundai H1', plate: 'B 2459 FGW', status: 'Tersedia', type: 'Van', icon: 'bx-bus', colorClass: 'car-color-1' },
     { id: 2, name: 'Toyota Fortuner', plate: 'B 2793 FBE', status: 'Tersedia', type: 'SUV', icon: 'bx-car', colorClass: 'car-color-2' },
-    { id: 3, name: 'Isuzu Elf 24', plate: 'B 7324 IR', status: 'Dipakai', type: 'Minibus', icon: 'bx-bus', colorClass: 'car-color-3' },
+    { id: 3, name: 'Isuzu Elf 24', plate: 'B 7324 IR', status: 'Tersedia', type: 'Minibus', icon: 'bx-bus', colorClass: 'car-color-3' },
     { id: 4, name: 'Honda CRV', plate: 'B 1458 SJD', status: 'Tersedia', type: 'SUV', icon: 'bx-car', colorClass: 'car-color-4' },
     { id: 5, name: 'Omoda 5', plate: 'B 1674 FNO', status: 'Tersedia', type: 'SUV', icon: 'bx-car', colorClass: 'car-color-1' },
     { id: 6, name: 'Ambulance', plate: 'B 7818 IR', status: 'Tersedia', type: 'Ambulance', icon: 'bx-plus-medical', colorClass: 'car-color-2' },
@@ -107,33 +107,80 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location.reload();
     });
 
-    // 3. Render Cars List
-    mockCars.forEach(car => {
-        const isAvailable = car.status === 'Tersedia';
-        const card = document.createElement('div');
-        card.className = `car-card ${isAvailable ? 'available' : 'used'}`;
-        card.dataset.id = car.id;
-        
-        card.innerHTML = `
-            <div class="car-header">
-                <div class="car-icon-wrapper ${car.colorClass}">
-                    <i class='bx ${car.icon}'></i>
-                </div>
-                <span class="status-badge ${isAvailable ? 'status-avail' : 'status-used'}">${car.status}</span>
+    // 3. Fetch Active Bookings and Render Cars
+    async function fetchAndRenderCars() {
+        carsGrid.innerHTML = `
+            <div style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text-muted);">
+                <i class='bx bx-loader-alt bx-spin' style="font-size: 2rem;"></i>
+                <p>Memuat status kendaraan...</p>
             </div>
-            <div class="car-details">
-                <h3>${car.name}</h3>
-                <p>${car.plate}</p>
-            </div>
-            <i class='bx bxs-check-circle check-icon'></i>
         `;
 
-        if (isAvailable) {
-            card.addEventListener('click', () => selectCar(car.id));
+        try {
+            // Fetch bookings that are 'disetujui' or 'menunggu' for today or future
+            const todayStr = new Date().toISOString().split('T')[0];
+            const { data, error } = await supabase
+                .from('peminjaman_mobil')
+                .select('kendaraan_nama, peminjam_nama, status')
+                .gte('tanggal', todayStr)
+                .in('status', ['disetujui', 'menunggu']);
+
+            if (!error && data) {
+                // Reset all cars to available first (in case of re-render)
+                mockCars.forEach(c => { c.status = 'Tersedia'; c.borrower = null; });
+                
+                data.forEach(booking => {
+                    const car = mockCars.find(c => c.name === booking.kendaraan_nama);
+                    if (car) {
+                        car.status = 'Dipakai';
+                        car.borrower = booking.peminjam_nama;
+                        car.bookingStatus = booking.status; // 'disetujui' or 'menunggu'
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Failed to fetch active bookings', e);
         }
 
-        carsGrid.appendChild(card);
-    });
+        carsGrid.innerHTML = '';
+        mockCars.forEach(car => {
+            const isAvailable = car.status === 'Tersedia';
+            const card = document.createElement('div');
+            card.className = `car-card ${isAvailable ? 'available' : 'used'}`;
+            card.dataset.id = car.id;
+            
+            let borrowerHtml = '';
+            if (!isAvailable && car.borrower) {
+                const statusText = car.bookingStatus === 'menunggu' ? '(Menunggu)' : '';
+                borrowerHtml = `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
+                    <i class='bx bx-user'></i> Dipinjam oleh: <strong>${car.borrower}</strong> ${statusText}
+                </div>`;
+            }
+
+            card.innerHTML = `
+                <div class="car-header">
+                    <div class="car-icon-wrapper ${car.colorClass}">
+                        <i class='bx ${car.icon}'></i>
+                    </div>
+                    <span class="status-badge ${isAvailable ? 'status-avail' : 'status-used'}">${car.status}</span>
+                </div>
+                <div class="car-details">
+                    <h3>${car.name}</h3>
+                    <p>${car.plate}</p>
+                    ${borrowerHtml}
+                </div>
+                <i class='bx bxs-check-circle check-icon'></i>
+            `;
+
+            if (isAvailable) {
+                card.addEventListener('click', () => selectCar(car.id));
+            }
+
+            carsGrid.appendChild(card);
+        });
+    }
+
+    await fetchAndRenderCars();
 
     // 4. Form Submit
     form.addEventListener('submit', async (e) => {
@@ -192,8 +239,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             successModal.classList.add('active');
             
-            // Reload history table
+            // Reload history table & cars
             await fetchAndRenderUserHistory(currentUserSession.user.id);
+            await fetchAndRenderCars();
         } catch (error) {
             console.error('Error submitting booking:', error);
             errorMessageEl.textContent = error.message || 'Terjadi kesalahan saat menyimpan data ke Supabase.';
