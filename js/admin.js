@@ -509,6 +509,7 @@ window.openAdminAction = function(id, type) {
         iconWrapper.className = 'action-icon-wrapper icon-approve';
         iconWrapper.innerHTML = "<i class='bx bx-check-circle'></i>";
         btnConfirm.className = 'btn-confirm confirm-approve';
+        btnConfirm.style.background = ''; // Reset inline background
         btnConfirm.textContent = 'Setujui Force';
     } else if (type === 'ditolak') {
         title.textContent = 'Tolak Pengajuan (Admin)';
@@ -516,6 +517,7 @@ window.openAdminAction = function(id, type) {
         iconWrapper.className = 'action-icon-wrapper icon-reject';
         iconWrapper.innerHTML = "<i class='bx bx-x-circle'></i>";
         btnConfirm.className = 'btn-confirm confirm-reject';
+        btnConfirm.style.background = ''; // Reset inline background
         btnConfirm.textContent = 'Tolak Force';
     } else if (type === 'selesai') {
         title.textContent = 'Mobil Dikembalikan (Selesai)';
@@ -524,7 +526,7 @@ window.openAdminAction = function(id, type) {
         iconWrapper.style.background = '#eff6ff';
         iconWrapper.innerHTML = "<i class='bx bx-check-double'></i>";
         btnConfirm.className = 'btn-confirm confirm-approve';
-        btnConfirm.style.background = 'var(--primary-color)';
+        btnConfirm.style.background = '#f97316'; // Use primary brand color (orange)
         btnConfirm.textContent = 'Tandai Selesai';
     } else if (type === 'menunggu') {
         title.textContent = 'Reset Status Pengajuan';
@@ -533,6 +535,7 @@ window.openAdminAction = function(id, type) {
         iconWrapper.style.background = '#eff6ff';
         iconWrapper.innerHTML = "<i class='bx bx-undo'></i>";
         btnConfirm.className = 'btn-confirm confirm-approve';
+        btnConfirm.style.background = ''; // Reset inline background
         btnConfirm.textContent = 'Reset Status';
     }
 
