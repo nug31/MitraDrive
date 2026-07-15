@@ -11,8 +11,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    // Fetch from profiles table to ensure consistency with DB edits
+    let role = session.user.user_metadata?.role;
+    let fullName = session.user.user_metadata?.full_name || session.user.email;
+    try {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role, full_name')
+            .eq('id', session.user.id)
+            .single();
+        if (profile) {
+            role = profile.role || role;
+            fullName = profile.full_name || fullName;
+        }
+    } catch (e) {
+        console.error('Failed to load profile', e);
+    }
+
     // Verify Admin Role
-    const role = session.user.user_metadata?.role;
     if (role !== 'admin') {
         alert('Akses Ditolak. Halaman ini khusus untuk Administrator.');
         window.location.href = role === 'leader' ? 'leader-dashboard.html' : 'index.html';
@@ -22,7 +38,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentAdminSession = session;
     
     // Set Profile Info
-    const fullName = session.user.user_metadata?.full_name || session.user.email;
     document.getElementById('adminName').textContent = fullName;
     document.getElementById('adminEmail').textContent = session.user.email;
 

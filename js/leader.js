@@ -110,8 +110,21 @@ function initLoginPage() {
 
                 if (error) throw error;
 
-                // Check role in user metadata
-                const role = data.user.user_metadata?.role;
+                // Check role in user metadata and profiles table
+                let role = data.user.user_metadata?.role;
+                try {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', data.user.id)
+                        .single();
+                    if (profile && profile.role) {
+                        role = profile.role;
+                    }
+                } catch (e) {
+                    console.error('Error fetching profile role:', e);
+                }
+                
                 if (role === 'admin') {
                     showToast('Login Admin berhasil! Mengalihkan...', 'success');
                     setTimeout(() => {
@@ -277,7 +290,19 @@ async function initDashboardPage() {
     }
 
     currentLeaderSession = session;
-    const fullName = session.user.user_metadata?.full_name || session.user.email;
+    let fullName = session.user.user_metadata?.full_name || session.user.email;
+    try {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', session.user.id)
+            .single();
+        if (profile && profile.full_name) {
+            fullName = profile.full_name;
+        }
+    } catch (e) {
+        console.error('Error fetching profile name:', e);
+    }
     
     leaderNameEl.textContent = fullName;
     leaderEmailEl.textContent = session.user.email;

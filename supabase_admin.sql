@@ -49,10 +49,67 @@ CREATE POLICY "Admin bisa hapus data"
   );
 
 -- ============================================================
--- CATATAN: Buat akun admin via tombol di login.html
--- atau signup manual dengan kredensial berikut:
+-- 5. Buat Akun Admin Langsung via SQL
+-- ============================================================
+-- Pastikan pgcrypto aktif (biasanya sudah default di Supabase)
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+DO $$
+DECLARE
+  admin_uid uuid;
+BEGIN
+  -- Cek apakah admin sudah ada
+  SELECT id INTO admin_uid FROM auth.users WHERE email = 'admin@mitradrive.id';
+  
+  IF admin_uid IS NULL THEN
+    -- Jika belum ada, buat baru
+    INSERT INTO auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at,
+      confirmation_token,
+      email_change,
+      email_change_token_new,
+      recovery_token
+    ) VALUES (
+      '00000000-0000-0000-0000-000000000000',
+      gen_random_uuid(),
+      'authenticated',
+      'authenticated',
+      'admin@mitradrive.id',
+      crypt('MitraAdmin2100', gen_salt('bf')),
+      now(),
+      '{"provider":"email","providers":["email"]}',
+      '{"role":"admin", "nama":"Administrator"}',
+      now(),
+      now(),
+      '',
+      '',
+      '',
+      ''
+    );
+  ELSE
+    -- Jika sudah ada, perbarui password dan role
+    UPDATE auth.users SET 
+      encrypted_password = crypt('MitraAdmin2100', gen_salt('bf')),
+      raw_user_meta_data = '{"role":"admin", "nama":"Administrator"}'
+    WHERE id = admin_uid;
+  END IF;
+END $$;
+
+-- ============================================================
+-- CATATAN: 
+-- Akun admin otomatis terbuat setelah script ini dijalankan.
 --
 -- Email    : admin@mitradrive.id
 -- Password : MitraAdmin2100
--- Role     : admin (set otomatis lewat tombol inisialisasi)
+-- Role     : admin 
 -- ============================================================

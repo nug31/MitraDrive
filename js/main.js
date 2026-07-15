@@ -41,17 +41,49 @@ document.addEventListener('DOMContentLoaded', async () => {
         navUserProfile.style.display = 'flex';
         logoutBtn.style.display = 'flex';
 
-        const fullName = session.user.user_metadata?.full_name || session.user.email;
-        const role = session.user.user_metadata?.role || 'peminjam';
+        // 1.5 Fetch profile from Supabase profiles table if available
+        let role = session.user.user_metadata?.role || 'peminjam';
+        let fullName = session.user.user_metadata?.full_name || session.user.email;
+        try {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role, full_name')
+                .eq('id', session.user.id)
+                .single();
+            if (profile) {
+                role = profile.role || role;
+                fullName = profile.full_name || fullName;
+            }
+        } catch (e) {
+            console.error('Failed to load profile', e);
+        }
         
         displayNameEl.textContent = fullName;
-        displayRoleEl.textContent = role === 'leader' ? 'Leader' : 'Peminjam';
+        
+        let displayRole = 'Peminjam';
+        if (role === 'admin') displayRole = 'Admin';
+        else if (role === 'leader') displayRole = 'Leader';
+        
+        displayRoleEl.textContent = displayRole;
 
         // Auto-fill and lock name field
         namaPeminjamInput.value = fullName;
         namaPeminjamInput.setAttribute('readonly', 'true');
         namaPeminjamInput.style.background = '#e2e8f0';
         namaPeminjamInput.style.cursor = 'not-allowed';
+        
+        // Add link to respective dashboard if admin/leader
+        const existingLink = document.getElementById('dashboardLinkBtn');
+        if (!existingLink && (role === 'admin' || role === 'leader')) {
+            const dashboardLink = document.createElement('a');
+            dashboardLink.id = 'dashboardLinkBtn';
+            dashboardLink.href = role === 'admin' ? 'admin-dashboard.html' : 'leader-dashboard.html';
+            dashboardLink.className = 'btn-leader-login';
+            dashboardLink.innerHTML = role === 'admin' ? "<i class='bx bx-shield'></i> Panel Admin" : "<i class='bx bx-check-shield'></i> Panel Leader";
+            dashboardLink.style.display = 'flex';
+            dashboardLink.style.marginRight = '15px';
+            document.getElementById('navRight').insertBefore(dashboardLink, navUserProfile);
+        }
 
         // Show and load user history
         userHistorySection.style.display = 'block';
@@ -178,7 +210,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Retain the locked name if logged in
         if (currentUserSession) {
-            namaPeminjamInput.value = currentUserSession.user.user_metadata?.full_name || currentUserSession.user.email;
+            let fullName = currentUserSession.user.user_metadata?.full_name || currentUserSession.user.email;
+            supabase.from('profiles').select('full_name').eq('id', currentUserSession.user.id).single().then(({data}) => {
+                if (data && data.full_name) {
+                    namaPeminjamInput.value = data.full_name;
+                }
+            });
+            namaPeminjamInput.value = fullName;
         }
 
         selectCar(null); // Deselect
