@@ -40,8 +40,6 @@ function initLoginPage() {
     const passwordInput = document.getElementById('password');
     const togglePassword = document.getElementById('togglePassword');
     const loginBtn = document.getElementById('loginBtn');
-    const btnInitAuth = document.getElementById('btnInitAuth');
-    const initStatus = document.getElementById('initStatus');
     
     // Tab switching elements
     const tabLogin = document.getElementById('tabLogin');
@@ -49,9 +47,7 @@ function initLoginPage() {
     const nameGroup = document.getElementById('nameGroup');
     const fullNameInput = document.getElementById('fullName');
     const emailLabel = document.getElementById('emailLabel');
-    const loginTitle = document.getElementById('loginTitle');
     const loginSubtitle = document.getElementById('loginSubtitle');
-    const leaderInitFooter = document.getElementById('leaderInitFooter');
 
     let currentMode = 'login'; // login | register
 
@@ -67,7 +63,6 @@ function initLoginPage() {
         loginTitle.textContent = "Masuk ke Akun Anda";
         loginSubtitle.textContent = "Silakan masuk untuk mengajukan peminjaman atau menyetujui sebagai leader.";
         loginBtn.innerHTML = `Masuk <i class='bx bx-log-in'></i>`;
-        leaderInitFooter.style.display = 'block';
     });
 
     tabRegister.addEventListener('click', () => {
@@ -81,7 +76,6 @@ function initLoginPage() {
         loginTitle.textContent = "Daftar Akun Peminjam";
         loginSubtitle.textContent = "Buat akun baru untuk mulai meminjam mobil operasional.";
         loginBtn.innerHTML = `Daftar Baru <i class='bx bx-user-plus'></i>`;
-        leaderInitFooter.style.display = 'none';
     });
 
     // Toggle Password Visibility
@@ -184,80 +178,6 @@ function initLoginPage() {
                 loginBtn.innerHTML = `Daftar Baru <i class='bx bx-user-plus'></i>`;
             }
         }
-    });
-
-    // Self-Seed / Init Leader Accounts
-    btnInitAuth.addEventListener('click', async () => {
-        btnInitAuth.disabled = true;
-        initStatus.className = 'init-status loading';
-        initStatus.textContent = 'Mendaftarkan akun-akun leader + admin di Supabase...';
-
-        let successCount = 0;
-        let skipCount = 0;
-        let failCount = 0;
-
-        // Create leader accounts
-        for (const leader of leadersToCreate) {
-            try {
-                const { data, error } = await supabase.auth.signUp({
-                    email: leader.email,
-                    password: leader.password,
-                    options: {
-                        data: {
-                            full_name: leader.name,
-                            role: 'leader'
-                        }
-                    }
-                });
-
-                if (error) {
-                    if (error.message.includes('already registered')) {
-                        skipCount++;
-                    } else {
-                        throw error;
-                    }
-                } else {
-                    successCount++;
-                }
-            } catch (err) {
-                console.error(`Gagal membuat akun ${leader.email}:`, err);
-                failCount++;
-            }
-        }
-
-        // Create admin account
-        try {
-            const { data, error } = await supabase.auth.signUp({
-                email: adminAccount.email,
-                password: adminAccount.password,
-                options: {
-                    data: {
-                        full_name: adminAccount.name,
-                        role: 'admin'
-                    }
-                }
-            });
-
-            if (error) {
-                if (error.message.includes('already registered')) {
-                    skipCount++;
-                } else {
-                    throw error;
-                }
-            } else {
-                successCount++;
-            }
-        } catch (err) {
-            console.error(`Gagal membuat akun admin:`, err);
-            failCount++;
-        }
-
-        initStatus.className = 'init-status success';
-        initStatus.innerHTML = `<i class='bx bx-check-circle'></i> Inisialisasi Selesai! (Leader + Admin)<br>
-            <span style="font-size:0.75rem; font-weight:400; color:var(--text-muted);">
-            Baru: ${successCount} | Sudah ada: ${skipCount} | Gagal: ${failCount}
-            </span>`;
-        btnInitAuth.disabled = false;
     });
 }
 
