@@ -571,7 +571,7 @@
     gap: 6px;
 }
 
-.btn-approve, .btn-reject, .btn-revert {
+.btn-approve, .btn-reject, .btn-revert, .btn-selesai {
     padding: 7px 14px;
     border: none;
     border-radius: 8px;
@@ -613,6 +613,16 @@
     background: #3b82f6;
     color: white;
     box-shadow: 0 3px 8px rgba(59,130,246,0.3);
+}
+
+.btn-selesai {
+    background: #ffedd5;
+    color: #c2410c;
+}
+.btn-selesai:hover {
+    background: #f97316;
+    color: white;
+    box-shadow: 0 3px 8px rgba(249,115,22,0.3);
 }
 
 .catatan-label {

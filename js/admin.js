@@ -309,7 +309,7 @@ function renderMainTable() {
         } else if (booking.status === 'disetujui') {
             actionsHtml = `
                 <div class="action-buttons">
-                    <button class="btn-approve" onclick="openAdminAction('${booking.id}', 'selesai')" title="Tandai Selesai / Dikembalikan" style="background: var(--primary-color);">
+                    <button class="btn-selesai" onclick="openAdminAction('${booking.id}', 'selesai')" title="Tandai Selesai / Dikembalikan">
                         <i class='bx bx-check-double'></i> Selesai
                     </button>
                     <button class="btn-revert" onclick="openAdminAction('${booking.id}', 'menunggu')" title="Kembalikan ke Menunggu">
