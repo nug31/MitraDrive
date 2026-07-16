@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         keperluan: keperluan,
                         leader_nama: leaderName,
                         leader_email: leaderEmail,
-                        status: 'menunggu'
+                        status: 'menunggu_leader'
                     }
                 ]);
 
@@ -335,12 +335,24 @@ async function fetchAndRenderUserHistory(userId) {
             // Badge styling
             let badgeClass = 'badge-menunggu';
             let statusIcon = 'bx-time-five';
-            if (booking.status === 'disetujui') {
+            let statusText = booking.status;
+            
+            if (booking.status === 'menunggu_leader') {
+                badgeClass = 'badge-menunggu';
+                statusIcon = 'bx-time-five';
+                statusText = 'Menunggu Leader';
+            } else if (booking.status === 'menunggu_admin') {
+                badgeClass = 'badge-menunggu-admin';
+                statusIcon = 'bx-time';
+                statusText = 'Menunggu Admin';
+            } else if (booking.status === 'disetujui') {
                 badgeClass = 'badge-disetujui';
                 statusIcon = 'bx-check-circle';
+                statusText = 'Disetujui';
             } else if (booking.status === 'ditolak') {
                 badgeClass = 'badge-ditolak';
                 statusIcon = 'bx-x-circle';
+                statusText = 'Ditolak';
             }
 
             // Catatan Leader
@@ -375,7 +387,7 @@ async function fetchAndRenderUserHistory(userId) {
                 </td>
                 <td data-label="Status">
                     <span class="badge-status ${badgeClass}">
-                        <i class='bx ${statusIcon}'></i> ${booking.status}
+                        <i class='bx ${statusIcon}'></i> ${statusText}
                     </span>
                     ${catatanHtml}
                 </td>

@@ -284,8 +284,9 @@
 }
 
 .badge-menunggu { background: #fef3c7; color: #d97706; }
-.badge-disetujui { background: #dcfce7; color: #15803d; }
-.badge-ditolak { background: #fee2e2; color: #b91c1c; }
+.badge-menunggu-admin { background: #e0f2fe; color: #0284c7; }
+.badge-disetujui { background: #dcfce7; color: #16a34a; }
+.badge-ditolak { background: #fee2e2; color: #ef4444; }
 
 /* Table Info formats */
 .peminjam-cell {

@@ -81,3 +81,12 @@
 -- Jabatan: Pemesinan
 -- Email: heru.triatmo@mitradrive.id
 -- Password: MI2100heru
+
+-- ==========================================
+-- 3. ADMIN (Persetujuan Akhir)
+-- ==========================================
+-- Nama: Administrator
+-- Jabatan: Admin / GA Utama
+-- Email: admin@mitradrive.id
+-- Password: MI2100admin
+
