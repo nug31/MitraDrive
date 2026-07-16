@@ -62,6 +62,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnRefresh.classList.remove('spinning');
     });
 
+    // Export Excel Button
+    const btnExportExcel = document.getElementById('btnExportExcel');
+    if (btnExportExcel) {
+        btnExportExcel.addEventListener('click', exportToExcel);
+    }
+
     // Load Data
     await loadAllBookings();
 });
@@ -608,5 +614,70 @@ function showToast(message, type = 'success') {
     toast.classList.add('show');
     setTimeout(() => {
         toast.classList.remove('show');
-    }, 4000);
+    }, 3000);
+}
+
+// ==========================================
+// EXPORT TO EXCEL
+// ==========================================
+function exportToExcel() {
+    if (allBookings.length === 0) {
+        showToast('Tidak ada data untuk diexport', 'error');
+        return;
+    }
+
+    // Prepare data for Excel
+    const dataToExport = allBookings.map(b => ({
+        'ID Pengajuan': b.id,
+        'Nama Peminjam': b.peminjam_nama,
+        'Kendaraan': b.kendaraan_nama,
+        'Plat Nomor': b.kendaraan_plat,
+        'Tanggal Dinas': formatDate(b.tanggal),
+        'Jam Mulai': b.jam_mulai,
+        'Jam Selesai': b.jam_selesai,
+        'Tujuan': b.tujuan,
+        'Keperluan': b.keperluan,
+        'Nama Approver': b.leader_nama,
+        'Status': b.status,
+        'Catatan Leader': b.catatan_leader || '',
+        'Sisa Bensin': b.sisa_bensin || '-',
+        'Sisa E-Toll': b.sisa_etol || '-',
+        'Kondisi Mobil': b.kondisi_mobil || '-',
+        'Tanggal Dibuat': formatDate(b.created_at, true)
+    }));
+
+    // Create a new workbook
+    const wb = XLSX.utils.book_new();
+    
+    // Convert JSON to worksheet
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    
+    // Auto-size columns (simple approximation)
+    const colWidths = [
+        { wch: 38 }, // ID
+        { wch: 20 }, // Nama Peminjam
+        { wch: 20 }, // Kendaraan
+        { wch: 15 }, // Plat
+        { wch: 15 }, // Tanggal Dinas
+        { wch: 12 }, // Jam Mulai
+        { wch: 12 }, // Jam Selesai
+        { wch: 30 }, // Tujuan
+        { wch: 40 }, // Keperluan
+        { wch: 20 }, // Nama Approver
+        { wch: 15 }, // Status
+        { wch: 40 }, // Catatan
+        { wch: 15 }, // Sisa Bensin
+        { wch: 15 }, // Sisa E-Toll
+        { wch: 30 }, // Kondisi Mobil
+        { wch: 20 }, // Tanggal Dibuat
+    ];
+    ws['!cols'] = colWidths;
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Rekapan Peminjaman");
+
+    // Generate Excel file and trigger download
+    XLSX.writeFile(wb, `Rekapan_Peminjaman_MitraDrive_${new Date().getTime()}.xlsx`);
+    
+    showToast('Berhasil mendownload Excel!', 'success');
 }

@@ -17,13 +17,19 @@ CREATE TABLE IF NOT EXISTS peminjaman_mobil (
   keperluan      TEXT    NOT NULL,
   leader_nama    TEXT    NOT NULL,
   leader_email   TEXT    NOT NULL,
-  status         TEXT    DEFAULT 'menunggu',  -- menunggu | disetujui | ditolak
+  status         TEXT    DEFAULT 'menunggu',  -- menunggu | menunggu_leader | menunggu_admin | disetujui | ditolak | selesai
   catatan_leader TEXT,
+  sisa_bensin    TEXT,
+  sisa_etol      TEXT,
+  kondisi_mobil  TEXT,
   created_at     TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Jika tabel sudah ada sebelumnya, jalankan ALTER berikut:
 -- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+-- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS sisa_bensin TEXT;
+-- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS sisa_etol TEXT;
+-- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS kondisi_mobil TEXT;
 
 -- ============================================================
 -- 2. Enable Row Level Security (RLS)

@@ -275,6 +275,61 @@ document.addEventListener('DOMContentLoaded', async () => {
     closeErrorBtn.addEventListener('click', () => {
         errorModal.classList.remove('active');
     });
+
+    // Feedback Form Logic
+    const feedbackModal = document.getElementById('feedbackModal');
+    const feedbackForm = document.getElementById('feedbackForm');
+    const closeFeedbackBtn = document.getElementById('closeFeedbackBtn');
+    const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
+
+    window.openFeedbackModal = function(bookingId) {
+        document.getElementById('feedbackBookingId').value = bookingId;
+        feedbackModal.classList.add('active');
+    };
+
+    closeFeedbackBtn.addEventListener('click', () => {
+        feedbackModal.classList.remove('active');
+        feedbackForm.reset();
+    });
+
+    feedbackForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const bookingId = document.getElementById('feedbackBookingId').value;
+        const sisaBensin = document.getElementById('sisaBensin').value;
+        const sisaEtol = document.getElementById('sisaEtol').value;
+        const kondisiMobil = document.getElementById('kondisiMobil').value;
+
+        submitFeedbackBtn.disabled = true;
+        submitFeedbackBtn.innerHTML = 'Mengirim... <i class="bx bx-loader-alt bx-spin"></i>';
+
+        try {
+            const { error } = await supabase
+                .from('peminjaman_mobil')
+                .update({ 
+                    sisa_bensin: sisaBensin,
+                    sisa_etol: sisaEtol,
+                    kondisi_mobil: kondisiMobil
+                })
+                .eq('id', bookingId);
+
+            if (error) throw error;
+            
+            feedbackModal.classList.remove('active');
+            feedbackForm.reset();
+            
+            // Reload history
+            if (currentUserSession) {
+                await fetchAndRenderUserHistory(currentUserSession.user.id);
+            }
+        } catch (error) {
+            console.error('Error submitting feedback:', error);
+            alert('Gagal mengirim laporan. Silakan coba lagi.');
+        } finally {
+            submitFeedbackBtn.disabled = false;
+            submitFeedbackBtn.innerHTML = 'Kirim Laporan';
+        }
+    });
+
 });
 
 function selectCar(id) {
@@ -394,6 +449,18 @@ async function fetchAndRenderUserHistory(userId) {
                         <i class='bx ${statusIcon}'></i> ${statusText}
                     </span>
                     ${catatanHtml}
+                    ${booking.status === 'selesai' && !booking.sisa_bensin ? `
+                        <div style="margin-top: 10px;">
+                            <button onclick="openFeedbackModal('${booking.id}')" class="btn-primary-solid" style="padding: 6px 12px; font-size: 0.8rem; width: 100%; border-radius: 6px;">
+                                <i class='bx bx-edit-alt'></i> Beri Laporan
+                            </button>
+                        </div>
+                    ` : ''}
+                    ${booking.status === 'selesai' && booking.sisa_bensin ? `
+                        <div style="margin-top: 10px; font-size: 0.8rem; color: #16a34a; font-weight: 500; display: flex; align-items: center; gap: 4px;">
+                            <i class='bx bx-check-shield'></i> Laporan Selesai
+                        </div>
+                    ` : ''}
                 </td>
             `;
 
