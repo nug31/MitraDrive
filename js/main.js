@@ -353,6 +353,10 @@ async function fetchAndRenderUserHistory(userId) {
                 badgeClass = 'badge-ditolak';
                 statusIcon = 'bx-x-circle';
                 statusText = 'Ditolak';
+            } else if (booking.status === 'selesai') {
+                badgeClass = 'badge-disetujui';
+                statusIcon = 'bx-check-double';
+                statusText = 'Selesai';
             }
 
             // Catatan Leader

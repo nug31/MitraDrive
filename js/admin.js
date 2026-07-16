@@ -151,8 +151,8 @@ async function loadAllBookings() {
 
 function updateStatsAndBadges() {
     const total = allBookings.length;
-    const pending = allBookings.filter(b => b.status === 'menunggu');
-    const approved = allBookings.filter(b => b.status === 'disetujui').length;
+    const pending = allBookings.filter(b => b.status === 'menunggu_admin');
+    const approved = allBookings.filter(b => b.status === 'disetujui' || b.status === 'selesai').length;
     const rejected = allBookings.filter(b => b.status === 'ditolak').length;
 
     // Top Stats
@@ -295,13 +295,24 @@ function renderMainTable() {
         const statusIcon = getStatusIcon(booking.status);
 
         let actionsHtml = '';
-        if (booking.status === 'menunggu') {
+        if (booking.status === 'menunggu_admin') {
             actionsHtml = `
                 <div class="action-buttons">
-                    <button class="btn-approve" onclick="openAdminAction('${booking.id}', 'disetujui')" title="Setujui">
+                    <button class="btn-approve" onclick="openAdminAction('${booking.id}', 'disetujui')" title="Setujui Akhir">
                         <i class='bx bx-check'></i>
                     </button>
                     <button class="btn-reject" onclick="openAdminAction('${booking.id}', 'ditolak')" title="Tolak">
+                        <i class='bx bx-x'></i>
+                    </button>
+                </div>
+            `;
+        } else if (booking.status === 'menunggu' || booking.status === 'menunggu_leader') {
+            actionsHtml = `
+                <div class="action-buttons">
+                    <button class="btn-approve" onclick="openAdminAction('${booking.id}', 'disetujui')" title="Force Setujui (Bypass Leader)">
+                        <i class='bx bx-check'></i>
+                    </button>
+                    <button class="btn-reject" onclick="openAdminAction('${booking.id}', 'ditolak')" title="Force Tolak">
                         <i class='bx bx-x'></i>
                     </button>
                 </div>
@@ -312,7 +323,7 @@ function renderMainTable() {
                     <button class="btn-selesai" onclick="openAdminAction('${booking.id}', 'selesai')" title="Tandai Selesai / Dikembalikan">
                         <i class='bx bx-check-double'></i> Selesai
                     </button>
-                    <button class="btn-revert" onclick="openAdminAction('${booking.id}', 'menunggu')" title="Kembalikan ke Menunggu">
+                    <button class="btn-revert" onclick="openAdminAction('${booking.id}', 'menunggu_leader')" title="Kembalikan ke Menunggu Leader">
                         <i class='bx bx-undo'></i> Reset
                     </button>
                 </div>
@@ -320,7 +331,7 @@ function renderMainTable() {
         } else {
             actionsHtml = `
                 <div class="action-buttons">
-                    <button class="btn-revert" onclick="openAdminAction('${booking.id}', 'menunggu')" title="Kembalikan ke Menunggu">
+                    <button class="btn-revert" onclick="openAdminAction('${booking.id}', 'menunggu_admin')" title="Kembalikan ke Menunggu Admin">
                         <i class='bx bx-undo'></i> Reset
                     </button>
                 </div>
@@ -528,9 +539,9 @@ window.openAdminAction = function(id, type) {
         btnConfirm.className = 'btn-confirm confirm-approve';
         btnConfirm.style.background = '#f97316'; // Use primary brand color (orange)
         btnConfirm.textContent = 'Tandai Selesai';
-    } else if (type === 'menunggu') {
+    } else if (type === 'menunggu_leader' || type === 'menunggu_admin' || type === 'menunggu') {
         title.textContent = 'Reset Status Pengajuan';
-        subtitle.textContent = 'Kembalikan status pengajuan menjadi "Menunggu" (akan bisa direview ulang oleh leader).';
+        subtitle.textContent = `Kembalikan status pengajuan menjadi "${type === 'menunggu_admin' ? 'Menunggu Admin' : 'Menunggu Leader'}" (akan bisa direview ulang).`;
         iconWrapper.className = 'action-icon-wrapper text-primary';
         iconWrapper.style.background = '#eff6ff';
         iconWrapper.innerHTML = "<i class='bx bx-undo'></i>";
@@ -549,6 +560,7 @@ function getBadgeClass(status) {
     if (status === 'disetujui') return 'badge-disetujui';
     if (status === 'selesai') return 'badge-disetujui'; // Re-use green color
     if (status === 'ditolak') return 'badge-ditolak';
+    if (status === 'menunggu_admin') return 'badge-menunggu-admin';
     return 'badge-menunggu';
 }
 
@@ -556,6 +568,7 @@ function getStatusIcon(status) {
     if (status === 'disetujui') return 'bx-check-circle';
     if (status === 'selesai') return 'bx-check-double';
     if (status === 'ditolak') return 'bx-x-circle';
+    if (status === 'menunggu_admin') return 'bx-time';
     return 'bx-time-five';
 }
 

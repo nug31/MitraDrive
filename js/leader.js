@@ -327,7 +327,7 @@ function updateStats() {
         : allBookings;
 
     const total = relevantBookings.length;
-    const pending = relevantBookings.filter(b => b.status === 'menunggu').length;
+    const pending = relevantBookings.filter(b => b.status === 'menunggu' || b.status === 'menunggu_leader').length;
     const approved = relevantBookings.filter(b => b.status === 'disetujui').length;
     const rejected = relevantBookings.filter(b => b.status === 'ditolak').length;
 
@@ -396,17 +396,28 @@ function filterAndRenderTable() {
         // Status Badge class
         let badgeClass = 'badge-menunggu';
         let statusIcon = 'bx-time-five';
-        if (booking.status === 'disetujui') {
+        let statusText = booking.status;
+        if (booking.status === 'menunggu' || booking.status === 'menunggu_leader') {
+            badgeClass = 'badge-menunggu';
+            statusIcon = 'bx-time-five';
+            statusText = 'Menunggu Leader';
+        } else if (booking.status === 'menunggu_admin') {
+            badgeClass = 'badge-menunggu-admin';
+            statusIcon = 'bx-time';
+            statusText = 'Menunggu Admin';
+        } else if (booking.status === 'disetujui') {
             badgeClass = 'badge-disetujui';
             statusIcon = 'bx-check-circle';
+            statusText = 'Disetujui';
         } else if (booking.status === 'ditolak') {
             badgeClass = 'badge-ditolak';
             statusIcon = 'bx-x-circle';
+            statusText = 'Ditolak';
         }
 
         // Actions cell
         let actionsHtml = '';
-        if (booking.status === 'menunggu' && booking.leader_email.toLowerCase() === myEmail.toLowerCase()) {
+        if ((booking.status === 'menunggu' || booking.status === 'menunggu_leader') && booking.leader_email.toLowerCase() === myEmail.toLowerCase()) {
             actionsHtml = `
                 <div class="action-buttons">
                     <button class="btn-approve" data-id="${booking.id}" title="Setujui">
@@ -459,7 +470,7 @@ function filterAndRenderTable() {
             </td>
             <td data-label="Status">
                 <span class="badge-status ${badgeClass}">
-                    <i class='bx ${statusIcon}'></i> ${booking.status}
+                    <i class='bx ${statusIcon}'></i> ${statusText}
                 </span>
                 ${catatanHtml}
             </td>
@@ -473,7 +484,7 @@ function filterAndRenderTable() {
         const rejectBtn = tr.querySelector('.btn-reject');
 
         if (approveBtn) {
-            approveBtn.addEventListener('click', () => openActionModal(booking.id, 'disetujui'));
+            approveBtn.addEventListener('click', () => openActionModal(booking.id, 'menunggu_admin'));
         }
         if (rejectBtn) {
             rejectBtn.addEventListener('click', () => openActionModal(booking.id, 'ditolak'));
@@ -493,9 +504,9 @@ function openActionModal(id, type) {
     document.getElementById('actionId').value = id;
     document.getElementById('actionType').value = type;
 
-    if (type === 'disetujui') {
+    if (type === 'menunggu_admin') {
         title.textContent = 'Setujui Pengajuan';
-        subtitle.textContent = 'Konfirmasi persetujuan untuk peminjaman unit mobil ini.';
+        subtitle.textContent = 'Konfirmasi persetujuan untuk peminjaman unit mobil ini. Pengajuan akan diteruskan ke Admin.';
         iconWrapper.className = 'action-icon-wrapper icon-approve';
         iconWrapper.innerHTML = "<i class='bx bx-check-circle'></i>";
         btnConfirm.className = 'btn-confirm confirm-approve';
