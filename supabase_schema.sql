@@ -22,6 +22,16 @@ CREATE TABLE IF NOT EXISTS peminjaman_mobil (
   sisa_bensin    TEXT,
   sisa_etol      TEXT,
   kondisi_mobil  TEXT,
+  km_awal        TEXT,
+  km_akhir       TEXT,
+  bensin_awal    TEXT,
+  bensin_akhir   TEXT,
+  driver_nama    TEXT,
+  penumpang      TEXT,
+  request_etoll  TEXT,
+  saldo_etoll_awal TEXT,
+  saldo_etoll_akhir TEXT,
+  catatan_abnormaliti TEXT,
   created_at     TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -30,6 +40,16 @@ CREATE TABLE IF NOT EXISTS peminjaman_mobil (
 -- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS sisa_bensin TEXT;
 -- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS sisa_etol TEXT;
 -- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS kondisi_mobil TEXT;
+-- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS km_awal TEXT;
+-- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS km_akhir TEXT;
+-- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS bensin_awal TEXT;
+-- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS bensin_akhir TEXT;
+-- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS driver_nama TEXT;
+-- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS penumpang TEXT;
+-- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS request_etoll TEXT;
+-- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS saldo_etoll_awal TEXT;
+-- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS saldo_etoll_akhir TEXT;
+-- ALTER TABLE peminjaman_mobil ADD COLUMN IF NOT EXISTS catatan_abnormaliti TEXT;
 
 -- ============================================================
 -- 2. Enable Row Level Security (RLS)

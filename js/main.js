@@ -184,11 +184,65 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await fetchAndRenderCars();
 
-    // 4. Form Submit
+    // Request E-Toll Toggle Listener
+    const requestEtollSelect = document.getElementById('requestEtoll');
+    const saldoEtollAwalGroup = document.getElementById('saldoEtollAwalGroup');
+    if (requestEtollSelect && saldoEtollAwalGroup) {
+        requestEtollSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'Ya') {
+                saldoEtollAwalGroup.style.display = 'block';
+            } else {
+                saldoEtollAwalGroup.style.display = 'none';
+                document.getElementById('saldoEtollAwal').value = '';
+            }
+        });
+    }
+
+    // Interactive Fuel Gauge Selector Logic Helper
+    const fuelAngles = { 'E': -90, '1/4': -45, '1/2': 0, '3/4': 45, 'F': 90 };
+    const fuelLabels = {
+        'E': { text: 'Hampir Habis (E)', color: '#ef4444' },
+        '1/4': { text: '1/4 Tangki', color: '#f97316' },
+        '1/2': { text: '1/2 Tangki', color: '#eab308' },
+        '3/4': { text: '3/4 Tangki', color: '#84cc16' },
+        'F': { text: 'Penuh (Full / F)', color: '#22c55e' }
+    };
+
+    function setupFuelSelector(buttonsContainerId, needleId, inputId, labelId) {
+        const container = document.getElementById(buttonsContainerId);
+        if (!container) return;
+        const buttons = container.querySelectorAll('.btn-fuel-opt');
+        const needle = document.getElementById(needleId);
+        const input = document.getElementById(inputId);
+        const label = document.getElementById(labelId);
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const level = btn.dataset.level;
+                buttons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                if (input) input.value = level;
+                if (needle && fuelAngles[level] !== undefined) {
+                    needle.setAttribute('transform', `rotate(${fuelAngles[level]} 50 50)`);
+                }
+                if (label && fuelLabels[level]) {
+                    label.textContent = fuelLabels[level].text;
+                    label.style.color = fuelLabels[level].color;
+                }
+            });
+        });
+    }
+
+    setupFuelSelector('fuelButtonsAwal', 'needleGroupAwal', 'bensinAwal', 'labelBensinAwal');
+    setupFuelSelector('fuelButtonsAkhir', 'needleGroupAkhir', 'bensinAkhir', 'labelBensinAkhir');
+
+    await fetchAndRenderCars();
+
+    // 4. Form Submit (Pengajuan Peminjaman Baru)
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Must be logged in to submit
         if (!currentUserSession) {
             alert('Silakan masuk (Login) atau daftar akun terlebih dahulu untuk melakukan peminjaman mobil!');
             window.location.href = 'login.html';
@@ -210,7 +264,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tujuan = document.getElementById('tujuan').value;
         const keperluan = document.getElementById('keperluan').value;
 
-        // Change submit button state to loading
+        // New inspection fields
+        const driverNama = document.getElementById('driverNama').value || namaPeminjam;
+        const penumpang = document.getElementById('penumpang').value || '-';
+        const kmAwal = document.getElementById('kmAwal').value || '-';
+        const bensinAwal = document.getElementById('bensinAwal').value || 'F';
+        const requestEtoll = document.getElementById('requestEtoll').value || 'Tidak';
+        const saldoEtollAwal = document.getElementById('saldoEtollAwal').value || '-';
+
         submitBtn.disabled = true;
         submitBtn.innerHTML = 'Mengirim... <i class="bx bx-loader-alt bx-spin"></i>';
 
@@ -230,6 +291,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                         keperluan: keperluan,
                         leader_nama: leaderName,
                         leader_email: leaderEmail,
+                        driver_nama: driverNama,
+                        penumpang: penumpang,
+                        km_awal: kmAwal,
+                        bensin_awal: bensinAwal,
+                        request_etoll: requestEtoll,
+                        saldo_etoll_awal: saldoEtollAwal,
                         status: 'menunggu_leader'
                     }
                 ]);
@@ -241,7 +308,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             successModal.classList.add('active');
             
-            // Reload history table & cars
             await fetchAndRenderUserHistory(currentUserSession.user.id);
             await fetchAndRenderCars();
         } catch (error) {
@@ -258,7 +324,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         successModal.classList.remove('active');
         form.reset();
         
-        // Retain the locked name if logged in
         if (currentUserSession) {
             let fullName = currentUserSession.user.user_metadata?.full_name || currentUserSession.user.email;
             supabase.from('profiles').select('full_name').eq('id', currentUserSession.user.id).single().then(({data}) => {
@@ -269,14 +334,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             namaPeminjamInput.value = fullName;
         }
 
-        selectCar(null); // Deselect
+        selectCar(null);
     });
 
     closeErrorBtn.addEventListener('click', () => {
         errorModal.classList.remove('active');
     });
 
-    // Feedback Form Logic
+    // Feedback Form Logic (Laporan Pengembalian)
     const feedbackModal = document.getElementById('feedbackModal');
     const feedbackForm = document.getElementById('feedbackForm');
     const closeFeedbackBtn = document.getElementById('closeFeedbackBtn');
@@ -287,48 +352,80 @@ document.addEventListener('DOMContentLoaded', async () => {
         feedbackModal.classList.add('active');
     };
 
-    closeFeedbackBtn.addEventListener('click', () => {
-        feedbackModal.classList.remove('active');
-        feedbackForm.reset();
-    });
-
-    feedbackForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const bookingId = document.getElementById('feedbackBookingId').value;
-        const sisaBensin = document.getElementById('sisaBensin').value;
-        const sisaEtol = document.getElementById('sisaEtol').value;
-        const kondisiMobil = document.getElementById('kondisiMobil').value;
-
-        submitFeedbackBtn.disabled = true;
-        submitFeedbackBtn.innerHTML = 'Mengirim... <i class="bx bx-loader-alt bx-spin"></i>';
-
-        try {
-            const { error } = await supabase
-                .from('peminjaman_mobil')
-                .update({ 
-                    sisa_bensin: sisaBensin,
-                    sisa_etol: sisaEtol,
-                    kondisi_mobil: kondisiMobil
-                })
-                .eq('id', bookingId);
-
-            if (error) throw error;
-            
+    if (closeFeedbackBtn) {
+        closeFeedbackBtn.addEventListener('click', () => {
             feedbackModal.classList.remove('active');
             feedbackForm.reset();
-            
-            // Reload history
-            if (currentUserSession) {
-                await fetchAndRenderUserHistory(currentUserSession.user.id);
+        });
+    }
+
+    if (feedbackForm) {
+        feedbackForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const bookingId = document.getElementById('feedbackBookingId').value;
+            const kmAkhir = document.getElementById('kmAkhir').value;
+            const bensinAkhir = document.getElementById('bensinAkhir').value;
+            const saldoEtollAkhir = document.getElementById('saldoEtollAkhir').value;
+            const catatanAbnormaliti = document.getElementById('catatanAbnormaliti').value;
+
+            submitFeedbackBtn.disabled = true;
+            submitFeedbackBtn.innerHTML = 'Mengirim... <i class="bx bx-loader-alt bx-spin"></i>';
+
+            try {
+                const { error } = await supabase
+                    .from('peminjaman_mobil')
+                    .update({ 
+                        km_akhir: kmAkhir,
+                        bensin_akhir: bensinAkhir,
+                        sisa_bensin: bensinAkhir,
+                        saldo_etoll_akhir: saldoEtollAkhir,
+                        sisa_etol: saldoEtollAkhir,
+                        catatan_abnormaliti: catatanAbnormaliti,
+                        kondisi_mobil: catatanAbnormaliti
+                    })
+                    .eq('id', bookingId);
+
+                if (error) throw error;
+                
+                feedbackModal.classList.remove('active');
+                feedbackForm.reset();
+                
+                if (currentUserSession) {
+                    await fetchAndRenderUserHistory(currentUserSession.user.id);
+                }
+            } catch (error) {
+                console.error('Error submitting feedback:', error);
+                alert('Gagal mengirim laporan. Silakan coba lagi.');
+            } finally {
+                submitFeedbackBtn.disabled = false;
+                submitFeedbackBtn.innerHTML = 'Kirim Laporan';
             }
-        } catch (error) {
-            console.error('Error submitting feedback:', error);
-            alert('Gagal mengirim laporan. Silakan coba lagi.');
-        } finally {
-            submitFeedbackBtn.disabled = false;
-            submitFeedbackBtn.innerHTML = 'Kirim Laporan';
+        });
+    }
+
+    // Official Form Replica Modal Logic
+    const officialFormModal = document.getElementById('officialFormModal');
+    const closeOfficialFormBtn = document.getElementById('closeOfficialFormBtn');
+    if (closeOfficialFormBtn) {
+        closeOfficialFormBtn.addEventListener('click', () => {
+            officialFormModal.classList.remove('active');
+        });
+    }
+
+    window.openOfficialFormModal = async function(bookingOrId) {
+        let booking = bookingOrId;
+        if (typeof bookingOrId === 'string') {
+            const { data } = await supabase.from('peminjaman_mobil').select('*').eq('id', bookingOrId).single();
+            booking = data;
         }
-    });
+        if (!booking) {
+            alert('Data pengajuan tidak ditemukan.');
+            return;
+        }
+
+        renderOfficialPaperForm(booking);
+        officialFormModal.classList.add('active');
+    };
 
 });
 
@@ -342,6 +439,187 @@ function selectCar(id) {
             card.classList.remove('selected');
         }
     });
+}
+
+// Render SVG Fuel Gauge Mini Dial for Paper Form
+function generateMiniFuelGaugeSVG(level) {
+    const fuelAngles = { 'E': -90, '1/4': -45, '1/2': 0, '3/4': 45, 'F': 90 };
+    const angle = fuelAngles[level] !== undefined ? fuelAngles[level] : 90;
+    return `
+        <svg viewBox="0 0 100 55" style="width: 75px; height: 42px;">
+            <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#cbd5e1" stroke-width="7" stroke-linecap="round" />
+            <path d="M 10 50 A 40 40 0 0 1 30 21" fill="none" stroke="#ef4444" stroke-width="7" />
+            <path d="M 30 21 A 40 40 0 0 1 50 10" fill="none" stroke="#f97316" stroke-width="7" />
+            <path d="M 50 10 A 40 40 0 0 1 70 21" fill="none" stroke="#eab308" stroke-width="7" />
+            <path d="M 70 21 A 40 40 0 0 1 90 50" fill="none" stroke="#22c55e" stroke-width="7" stroke-linecap="round" />
+            <text x="7" y="54" font-size="7" font-weight="bold" fill="#334155">E</text>
+            <text x="87" y="54" font-size="7" font-weight="bold" fill="#334155">F</text>
+            <g transform="rotate(${angle} 50 50)">
+                <line x1="50" y1="50" x2="16" y2="50" stroke="#0f172a" stroke-width="3" stroke-linecap="round" />
+                <circle cx="50" cy="50" r="4.5" fill="#0f172a" />
+            </g>
+        </svg>
+    `;
+}
+
+// Render Paper Form Replica HTML inside Modal
+function renderOfficialPaperForm(booking) {
+    const container = document.getElementById('officialFormContent');
+    if (!container) return;
+
+    const bensinAwal = booking.bensin_awal || 'F';
+    const bensinAkhir = booking.bensin_akhir || booking.sisa_bensin || '-';
+    const kmAwal = booking.km_awal ? `${booking.km_awal} KM` : '-';
+    const kmAkhir = booking.km_akhir ? `${booking.km_akhir} KM` : '-';
+    const driver = booking.driver_nama || booking.peminjam_nama;
+    const penumpang = booking.penumpang || '-';
+    const reqEtoll = booking.request_etoll || (booking.sisa_etol ? 'Ya' : 'Tidak');
+    const saldoEtollAwal = booking.saldo_etoll_awal || '-';
+    const saldoEtollAkhir = booking.saldo_etoll_akhir || booking.sisa_etol || '-';
+    const abnormaliti = booking.catatan_abnormaliti || booking.kondisi_mobil || 'Tidak ada abnormaliti yang dilaporkan.';
+
+    let statusLeaderText = 'Pending';
+    if (booking.status === 'disetujui' || booking.status === 'selesai') {
+        statusLeaderText = '✓ Disetujui';
+    } else if (booking.status === 'ditolak') {
+        statusLeaderText = '✗ Ditolak';
+    }
+
+    container.innerHTML = `
+        <div class="of-header">
+            <div class="of-logo-area">
+                <div style="width:48px; height:48px; background:linear-gradient(135deg, #f97316, #fbbf24); border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-size:1.6rem;">
+                    <i class='bx bx-car'></i>
+                </div>
+                <div>
+                    <div style="font-size:0.75rem; font-weight:800; color:#f97316; letter-spacing:1px;">SMK MITRA INDUSTRI MM2100</div>
+                    <div style="font-size:0.65rem; color:#64748b;">Kawasan Industri MM2100 Cikarang</div>
+                </div>
+            </div>
+            <div class="of-title-area">
+                <h2>FORM PEMINJAMAN MOBIL OPERASIONAL</h2>
+                <h3>SMK MITRA INDUSTRI MM2100</h3>
+            </div>
+            <div class="of-car-icon">
+                <i class='bx bx-car'></i>
+            </div>
+        </div>
+
+        <!-- Row 1 Table -->
+        <table class="of-table">
+            <thead>
+                <tr>
+                    <th style="width: 14%;">Tanggal Pinjam</th>
+                    <th style="width: 18%;">Nama Peminjam</th>
+                    <th style="width: 16%;">Unit Mobil</th>
+                    <th style="width: 26%;">Keperluan & Tujuan</th>
+                    <th style="width: 13%;">KM Awal</th>
+                    <th style="width: 13%;">KM Akhir</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>${formatDate(booking.tanggal)}</strong></td>
+                    <td><strong>${booking.peminjam_nama}</strong></td>
+                    <td>${booking.kendaraan_nama}<br><span style="font-size:0.75rem; color:#64748b;">${booking.kendaraan_plat}</span></td>
+                    <td style="text-align:left;"><strong>Tujuan:</strong> ${booking.tujuan}<br><strong>Keperluan:</strong> ${booking.keperluan}</td>
+                    <td>${kmAwal}</td>
+                    <td>${kmAkhir}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Row 2 Table -->
+        <table class="of-table">
+            <thead>
+                <tr>
+                    <th style="width: 11%;">Jam Pinjam</th>
+                    <th style="width: 11%;">Jam Kembali</th>
+                    <th style="width: 16%;">Bensin Awal</th>
+                    <th style="width: 16%;">Bensin Akhir</th>
+                    <th style="width: 14%;">Driver</th>
+                    <th style="width: 14%;">Penumpang</th>
+                    <th style="width: 18%;">Request E-Toll</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>${booking.jam_mulai}</td>
+                    <td>${booking.jam_selesai}</td>
+                    <td>
+                        <div class="of-fuel-dial-wrapper">
+                            ${generateMiniFuelGaugeSVG(bensinAwal)}
+                            <span style="font-size:0.72rem; font-weight:700;">Level: ${bensinAwal}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="of-fuel-dial-wrapper">
+                            ${bensinAkhir !== '-' ? generateMiniFuelGaugeSVG(bensinAkhir) : '<span style="color:#94a3b8;">-</span>'}
+                            <span style="font-size:0.72rem; font-weight:700;">Level: ${bensinAkhir}</span>
+                        </div>
+                    </td>
+                    <td>${driver}</td>
+                    <td>${penumpang}</td>
+                    <td style="text-align:left; font-size:0.75rem;">
+                        <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+                            <span style="padding:2px 6px; border-radius:4px; font-weight:bold; font-size:0.65rem; background:${reqEtoll==='Ya'?'#dcfce7':'#f1f5f9'}; color:${reqEtoll==='Ya'?'#15803d':'#475569'};">
+                                ${reqEtoll==='Ya'?'YES':'NO'}
+                            </span>
+                        </div>
+                        <div><strong>Saldo Awal:</strong> ${saldoEtollAwal}</div>
+                        <div><strong>Saldo Akhir:</strong> ${saldoEtollAkhir}</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Catatan Abnormaliti -->
+        <div class="of-abnormality-box">
+            <div class="of-abnormality-title"><i class='bx bx-error-circle'></i> CATATAN ABNORMALITI:</div>
+            <div class="of-abnormality-content">
+                ${abnormaliti}
+            </div>
+        </div>
+
+        <!-- Signatures Table (5 Columns) -->
+        <table class="of-signatures-table">
+            <thead>
+                <tr>
+                    <th style="width:20%;">KOORDINATOR TEFA</th>
+                    <th style="width:20%;">TTD DIRECT LEADER</th>
+                    <th style="width:20%;">TTD CHECKER</th>
+                    <th style="width:20%;">TTD PIC PEMINJAMAN</th>
+                    <th style="width:20%;">TTD PEMINJAM</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div style="font-size:0.65rem; color:#64748b;">(.........................)</div>
+                        <div>tgl .../.../20...</div>
+                    </td>
+                    <td>
+                        <div style="font-weight:bold; color:${booking.status==='disetujui'||booking.status==='selesai'?'#16a34a':'#ea580c'}; font-size:0.75rem;">
+                            ${statusLeaderText}
+                        </div>
+                        <div style="font-weight:600;">(${booking.leader_nama})</div>
+                    </td>
+                    <td>
+                        <div style="font-size:0.65rem; color:#64748b;">(.........................)</div>
+                        <div>tgl .../.../20...</div>
+                    </td>
+                    <td>
+                        <div style="font-weight:600;">( Admin GA / PIC )</div>
+                        <div>tgl ${formatDate(booking.tanggal)}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight:600;">(${booking.peminjam_nama})</div>
+                        <div>tgl ${formatDate(booking.tanggal)}</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    `;
 }
 
 // 5. Fetch and Render User Booking History
@@ -383,11 +661,8 @@ async function fetchAndRenderUserHistory(userId) {
         userHistoryBody.innerHTML = '';
         userBookings.forEach(booking => {
             const tr = document.createElement('tr');
-            
-            // Format Dates
             const tglDinas = formatDate(booking.tanggal);
 
-            // Badge styling
             let badgeClass = 'badge-menunggu';
             let statusIcon = 'bx-time-five';
             let statusText = booking.status;
@@ -414,11 +689,13 @@ async function fetchAndRenderUserHistory(userId) {
                 statusText = 'Selesai';
             }
 
-            // Catatan Leader
             let catatanHtml = '';
             if (booking.catatan_leader) {
                 catatanHtml = `<div class="catatan-leader-box" title="Catatan Leader"><strong>Catatan:</strong> ${booking.catatan_leader}</div>`;
             }
+
+            const bensinAwalStr = booking.bensin_awal || 'F';
+            const bensinAkhirStr = booking.bensin_akhir || booking.sisa_bensin;
 
             tr.innerHTML = `
                 <td data-label="Kendaraan">
@@ -431,12 +708,18 @@ async function fetchAndRenderUserHistory(userId) {
                     <div class="rencana-cell">
                         <span class="tanggal-dinas">${tglDinas}</span>
                         <span class="jam"><i class='bx bx-time-five'></i> ${booking.jam_mulai} - ${booking.jam_selesai}</span>
+                        <div style="font-size:0.75rem; color:#64748b; margin-top:3px;">
+                            <i class='bx bx-tachometer'></i> KM Awal: ${booking.km_awal || '-'}
+                        </div>
                     </div>
                 </td>
                 <td data-label="Tujuan">
                     <div class="tujuan-cell">
                         <div class="lokasi">${booking.tujuan}</div>
                         <div class="keperluan">${booking.keperluan}</div>
+                        <div style="font-size:0.75rem; color:#64748b; margin-top:3px;">
+                            <i class='bx bx-id-card'></i> Driver: ${booking.driver_nama || booking.peminjam_nama}
+                        </div>
                     </div>
                 </td>
                 <td data-label="Approver">
@@ -449,18 +732,18 @@ async function fetchAndRenderUserHistory(userId) {
                         <i class='bx ${statusIcon}'></i> ${statusText}
                     </span>
                     ${catatanHtml}
-                    ${booking.status === 'selesai' && !booking.sisa_bensin ? `
-                        <div style="margin-top: 10px;">
+                    
+                    <div style="display:flex; flex-direction:column; gap:6px; margin-top: 10px;">
+                        ${(booking.status === 'selesai' || booking.status === 'disetujui') && !bensinAkhirStr ? `
                             <button onclick="openFeedbackModal('${booking.id}')" class="btn-primary-solid" style="padding: 6px 12px; font-size: 0.8rem; width: 100%; border-radius: 6px;">
-                                <i class='bx bx-edit-alt'></i> Beri Laporan
+                                <i class='bx bx-edit-alt'></i> Beri Laporan / Feedback
                             </button>
-                        </div>
-                    ` : ''}
-                    ${booking.status === 'selesai' && booking.sisa_bensin ? `
-                        <div style="margin-top: 10px; font-size: 0.8rem; color: #16a34a; font-weight: 500; display: flex; align-items: center; gap: 4px;">
-                            <i class='bx bx-check-shield'></i> Laporan Selesai
-                        </div>
-                    ` : ''}
+                        ` : ''}
+
+                        <button onclick="openOfficialFormModal('${booking.id}')" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; cursor:pointer; font-weight:600; display:flex; align-items:center; justify-content:center; gap:4px;">
+                            <i class='bx bx-file'></i> Form Official Cetak
+                        </button>
+                    </div>
                 </td>
             `;
 
@@ -478,6 +761,7 @@ async function fetchAndRenderUserHistory(userId) {
         `;
     }
 }
+
 
 // Helpers
 function formatDate(dateStr) {

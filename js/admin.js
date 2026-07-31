@@ -630,54 +630,251 @@ function exportToExcel() {
     const dataToExport = allBookings.map(b => ({
         'ID Pengajuan': b.id,
         'Nama Peminjam': b.peminjam_nama,
+        'Driver': b.driver_nama || b.peminjam_nama,
+        'Penumpang': b.penumpang || '-',
         'Kendaraan': b.kendaraan_nama,
         'Plat Nomor': b.kendaraan_plat,
         'Tanggal Dinas': formatDate(b.tanggal),
         'Jam Mulai': b.jam_mulai,
         'Jam Selesai': b.jam_selesai,
+        'KM Awal': b.km_awal || '-',
+        'KM Akhir': b.km_akhir || '-',
+        'Bensin Awal': b.bensin_awal || 'F',
+        'Bensin Akhir': b.bensin_akhir || b.sisa_bensin || '-',
+        'Request E-Toll': b.request_etoll || 'Tidak',
+        'Saldo E-Toll Awal': b.saldo_etoll_awal || '-',
+        'Saldo E-Toll Akhir': b.saldo_etoll_akhir || b.sisa_etol || '-',
+        'Catatan Abnormaliti': b.catatan_abnormaliti || b.kondisi_mobil || '-',
         'Tujuan': b.tujuan,
         'Keperluan': b.keperluan,
         'Nama Approver': b.leader_nama,
         'Status': b.status,
         'Catatan Leader': b.catatan_leader || '',
-        'Sisa Bensin': b.sisa_bensin || '-',
-        'Sisa E-Toll': b.sisa_etol || '-',
-        'Kondisi Mobil': b.kondisi_mobil || '-',
         'Tanggal Dibuat': formatDate(b.created_at, true)
     }));
 
-    // Create a new workbook
     const wb = XLSX.utils.book_new();
-    
-    // Convert JSON to worksheet
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     
-    // Auto-size columns (simple approximation)
     const colWidths = [
         { wch: 38 }, // ID
         { wch: 20 }, // Nama Peminjam
+        { wch: 20 }, // Driver
+        { wch: 25 }, // Penumpang
         { wch: 20 }, // Kendaraan
         { wch: 15 }, // Plat
         { wch: 15 }, // Tanggal Dinas
         { wch: 12 }, // Jam Mulai
         { wch: 12 }, // Jam Selesai
+        { wch: 12 }, // KM Awal
+        { wch: 12 }, // KM Akhir
+        { wch: 14 }, // Bensin Awal
+        { wch: 14 }, // Bensin Akhir
+        { wch: 14 }, // Req Etoll
+        { wch: 16 }, // Saldo Etoll Awal
+        { wch: 16 }, // Saldo Etoll Akhir
+        { wch: 35 }, // Catatan Abnormaliti
         { wch: 30 }, // Tujuan
         { wch: 40 }, // Keperluan
         { wch: 20 }, // Nama Approver
         { wch: 15 }, // Status
-        { wch: 40 }, // Catatan
-        { wch: 15 }, // Sisa Bensin
-        { wch: 15 }, // Sisa E-Toll
-        { wch: 30 }, // Kondisi Mobil
+        { wch: 30 }, // Catatan Leader
         { wch: 20 }, // Tanggal Dibuat
     ];
     ws['!cols'] = colWidths;
 
-    // Add worksheet to workbook
     XLSX.utils.book_append_sheet(wb, ws, "Rekapan Peminjaman");
-
-    // Generate Excel file and trigger download
     XLSX.writeFile(wb, `Rekapan_Peminjaman_MitraDrive_${new Date().getTime()}.xlsx`);
-    
     showToast('Berhasil mendownload Excel!', 'success');
 }
+
+// Official Paper Form Replica Modal Handler for Admin Panel
+window.openOfficialFormModal = function(bookingId) {
+    const booking = allBookings.find(b => b.id === bookingId);
+    if (!booking) {
+        showToast('Data pengajuan tidak ditemukan', 'error');
+        return;
+    }
+
+    const officialFormModal = document.getElementById('officialFormModal');
+    const container = document.getElementById('officialFormContent');
+    const closeBtn = document.getElementById('closeOfficialFormBtn');
+
+    if (closeBtn) {
+        closeBtn.onclick = () => officialFormModal.classList.remove('active');
+    }
+
+    if (container) {
+        const bensinAwal = booking.bensin_awal || 'F';
+        const bensinAkhir = booking.bensin_akhir || booking.sisa_bensin || '-';
+        const kmAwal = booking.km_awal ? `${booking.km_awal} KM` : '-';
+        const kmAkhir = booking.km_akhir ? `${booking.km_akhir} KM` : '-';
+        const driver = booking.driver_nama || booking.peminjam_nama;
+        const penumpang = booking.penumpang || '-';
+        const reqEtoll = booking.request_etoll || (booking.sisa_etol ? 'Ya' : 'Tidak');
+        const saldoEtollAwal = booking.saldo_etoll_awal || '-';
+        const saldoEtollAkhir = booking.saldo_etoll_akhir || booking.sisa_etol || '-';
+        const abnormaliti = booking.catatan_abnormaliti || booking.kondisi_mobil || 'Tidak ada abnormaliti yang dilaporkan.';
+
+        let statusLeaderText = 'Pending';
+        if (booking.status === 'disetujui' || booking.status === 'selesai') {
+            statusLeaderText = '✓ Disetujui';
+        } else if (booking.status === 'ditolak') {
+            statusLeaderText = '✗ Ditolak';
+        }
+
+        const fuelAngles = { 'E': -90, '1/4': -45, '1/2': 0, '3/4': 45, 'F': 90 };
+        function getSvg(level) {
+            const angle = fuelAngles[level] !== undefined ? fuelAngles[level] : 90;
+            return `
+                <svg viewBox="0 0 100 55" style="width: 75px; height: 42px;">
+                    <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#cbd5e1" stroke-width="7" stroke-linecap="round" />
+                    <path d="M 10 50 A 40 40 0 0 1 30 21" fill="none" stroke="#ef4444" stroke-width="7" />
+                    <path d="M 30 21 A 40 40 0 0 1 50 10" fill="none" stroke="#f97316" stroke-width="7" />
+                    <path d="M 50 10 A 40 40 0 0 1 70 21" fill="none" stroke="#eab308" stroke-width="7" />
+                    <path d="M 70 21 A 40 40 0 0 1 90 50" fill="none" stroke="#22c55e" stroke-width="7" stroke-linecap="round" />
+                    <text x="7" y="54" font-size="7" font-weight="bold" fill="#334155">E</text>
+                    <text x="87" y="54" font-size="7" font-weight="bold" fill="#334155">F</text>
+                    <g transform="rotate(${angle} 50 50)">
+                        <line x1="50" y1="50" x2="16" y2="50" stroke="#0f172a" stroke-width="3" stroke-linecap="round" />
+                        <circle cx="50" cy="50" r="4.5" fill="#0f172a" />
+                    </g>
+                </svg>
+            `;
+        }
+
+        container.innerHTML = `
+            <div class="of-header">
+                <div class="of-logo-area">
+                    <div style="width:48px; height:48px; background:linear-gradient(135deg, #f97316, #fbbf24); border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-size:1.6rem;">
+                        <i class='bx bx-car'></i>
+                    </div>
+                    <div>
+                        <div style="font-size:0.75rem; font-weight:800; color:#f97316; letter-spacing:1px;">SMK MITRA INDUSTRI MM2100</div>
+                        <div style="font-size:0.65rem; color:#64748b;">Kawasan Industri MM2100 Cikarang</div>
+                    </div>
+                </div>
+                <div class="of-title-area">
+                    <h2>FORM PEMINJAMAN MOBIL OPERASIONAL</h2>
+                    <h3>SMK MITRA INDUSTRI MM2100</h3>
+                </div>
+                <div class="of-car-icon">
+                    <i class='bx bx-car'></i>
+                </div>
+            </div>
+
+            <table class="of-table">
+                <thead>
+                    <tr>
+                        <th style="width: 14%;">Tanggal Pinjam</th>
+                        <th style="width: 18%;">Nama Peminjam</th>
+                        <th style="width: 16%;">Unit Mobil</th>
+                        <th style="width: 26%;">Keperluan & Tujuan</th>
+                        <th style="width: 13%;">KM Awal</th>
+                        <th style="width: 13%;">KM Akhir</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>${formatDate(booking.tanggal)}</strong></td>
+                        <td><strong>${booking.peminjam_nama}</strong></td>
+                        <td>${booking.kendaraan_nama}<br><span style="font-size:0.75rem; color:#64748b;">${booking.kendaraan_plat}</span></td>
+                        <td style="text-align:left;"><strong>Tujuan:</strong> ${booking.tujuan}<br><strong>Keperluan:</strong> ${booking.keperluan}</td>
+                        <td>${kmAwal}</td>
+                        <td>${kmAkhir}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="of-table">
+                <thead>
+                    <tr>
+                        <th style="width: 11%;">Jam Pinjam</th>
+                        <th style="width: 11%;">Jam Kembali</th>
+                        <th style="width: 16%;">Bensin Awal</th>
+                        <th style="width: 16%;">Bensin Akhir</th>
+                        <th style="width: 14%;">Driver</th>
+                        <th style="width: 14%;">Penumpang</th>
+                        <th style="width: 18%;">Request E-Toll</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>${booking.jam_mulai}</td>
+                        <td>${booking.jam_selesai}</td>
+                        <td>
+                            <div class="of-fuel-dial-wrapper">
+                                ${getSvg(bensinAwal)}
+                                <span style="font-size:0.72rem; font-weight:700;">Level: ${bensinAwal}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="of-fuel-dial-wrapper">
+                                ${bensinAkhir !== '-' ? getSvg(bensinAkhir) : '<span style="color:#94a3b8;">-</span>'}
+                                <span style="font-size:0.72rem; font-weight:700;">Level: ${bensinAkhir}</span>
+                            </div>
+                        </td>
+                        <td>${driver}</td>
+                        <td>${penumpang}</td>
+                        <td style="text-align:left; font-size:0.75rem;">
+                            <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+                                <span style="padding:2px 6px; border-radius:4px; font-weight:bold; font-size:0.65rem; background:${reqEtoll==='Ya'?'#dcfce7':'#f1f5f9'}; color:${reqEtoll==='Ya'?'#15803d':'#475569'};">
+                                    ${reqEtoll==='Ya'?'YES':'NO'}
+                                </span>
+                            </div>
+                            <div><strong>Saldo Awal:</strong> ${saldoEtollAwal}</div>
+                            <div><strong>Saldo Akhir:</strong> ${saldoEtollAkhir}</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="of-abnormality-box">
+                <div class="of-abnormality-title"><i class='bx bx-error-circle'></i> CATATAN ABNORMALITI:</div>
+                <div class="of-abnormality-content">
+                    ${abnormaliti}
+                </div>
+            </div>
+
+            <table class="of-signatures-table">
+                <thead>
+                    <tr>
+                        <th style="width:20%;">KOORDINATOR TEFA</th>
+                        <th style="width:20%;">TTD DIRECT LEADER</th>
+                        <th style="width:20%;">TTD CHECKER</th>
+                        <th style="width:20%;">TTD PIC PEMINJAMAN</th>
+                        <th style="width:20%;">TTD PEMINJAM</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div style="font-size:0.65rem; color:#64748b;">(.........................)</div>
+                            <div>tgl .../.../20...</div>
+                        </td>
+                        <td>
+                            <div style="font-weight:bold; color:${booking.status==='disetujui'||booking.status==='selesai'?'#16a34a':'#ea580c'}; font-size:0.75rem;">
+                                ${statusLeaderText}
+                            </div>
+                            <div style="font-weight:600;">(${booking.leader_nama})</div>
+                        </td>
+                        <td>
+                            <div style="font-size:0.65rem; color:#64748b;">(.........................)</div>
+                            <div>tgl .../.../20...</div>
+                        </td>
+                        <td>
+                            <div style="font-weight:600;">( Admin GA / PIC )</div>
+                            <div>tgl ${formatDate(booking.tanggal)}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight:600;">(${booking.peminjam_nama})</div>
+                            <div>tgl ${formatDate(booking.tanggal)}</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+    }
+
+    officialFormModal.classList.add('active');
+};

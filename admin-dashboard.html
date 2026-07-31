@@ -275,6 +275,28 @@
         </div>
     </div>
 
+    <!-- Official Paper Form Replica Modal -->
+    <div class="modal-overlay" id="officialFormModal">
+        <div class="modal-content" style="max-width: 860px; padding: 16px; background: transparent; box-shadow: none;">
+            <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <span style="font-weight: 700; color: #0f172a; font-size: 1rem;"><i class='bx bx-file text-primary'></i> Form Peminjaman Mobil Operasional Resmi</span>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="window.print()" class="btn-primary-solid" style="padding: 8px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                        <i class='bx bx-printer'></i> Cetak Form / Save PDF
+                    </button>
+                    <button id="closeOfficialFormBtn" style="padding: 8px 16px; background: #e2e8f0; color: #334155; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+
+            <!-- Paper Replica -->
+            <div class="official-form-container" id="officialFormContent">
+                <!-- Injected dynamically by JS -->
+            </div>
+        </div>
+    </div>
+
     <!-- SheetJS for Excel Export -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script type="module" src="js/admin.js"></script>

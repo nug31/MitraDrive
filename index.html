@@ -106,6 +106,72 @@
                             <textarea placeholder="Deskripsikan keperluan dinas Anda..." rows="3" required id="keperluan"></textarea>
                         </div>
 
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class='bx bx-id-card text-primary'></i> Nama Driver / Pengemudi</label>
+                                <input type="text" placeholder="Masukkan nama pengemudi..." required id="driverNama">
+                            </div>
+                            <div class="form-group">
+                                <label><i class='bx bx-group text-primary'></i> Daftar Penumpang</label>
+                                <input type="text" placeholder="Contoh: Pak Budi, Bu Siti (3 Orang)" id="penumpang">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class='bx bx-tachometer text-primary'></i> KM Awal (Odometer)</label>
+                                <input type="number" placeholder="Contoh: 45210" required id="kmAwal">
+                            </div>
+                            <div class="form-group">
+                                <label><i class='bx bx-credit-card text-primary'></i> Request E-Toll?</label>
+                                <select id="requestEtoll" required>
+                                    <option value="Tidak">Tidak</option>
+                                    <option value="Ya">Ya (Butuh E-Toll)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="saldoEtollAwalGroup" style="display: none;">
+                            <label><i class='bx bx-wallet text-primary'></i> Saldo E-Toll Awal</label>
+                            <input type="text" placeholder="Contoh: Rp 100.000" id="saldoEtollAwal">
+                        </div>
+
+                        <!-- Visual Fuel Gauge Inspection Component (Bensin Awal) -->
+                        <div class="form-group">
+                            <label><i class='bx bx-gas-pump text-primary'></i> Pengecekan Bensin Awal (Kondisi Awal)</label>
+                            <input type="hidden" id="bensinAwal" value="F" required>
+                            <div class="fuel-selector-container">
+                                <div class="fuel-gauge-visual">
+                                    <div class="gauge-svg-container">
+                                        <svg viewBox="0 0 100 55" style="width:100%; height:100%;">
+                                            <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#e2e8f0" stroke-width="8" stroke-linecap="round" />
+                                            <path d="M 10 50 A 40 40 0 0 1 30 21" fill="none" stroke="#ef4444" stroke-width="8" />
+                                            <path d="M 30 21 A 40 40 0 0 1 50 10" fill="none" stroke="#f97316" stroke-width="8" />
+                                            <path d="M 50 10 A 40 40 0 0 1 70 21" fill="none" stroke="#eab308" stroke-width="8" />
+                                            <path d="M 70 21 A 40 40 0 0 1 90 50" fill="none" stroke="#22c55e" stroke-width="8" stroke-linecap="round" />
+                                            <text x="8" y="54" font-size="7" font-weight="bold" fill="#ef4444">E</text>
+                                            <text x="87" y="54" font-size="7" font-weight="bold" fill="#22c55e">F</text>
+                                            <!-- Needle -->
+                                            <g id="needleGroupAwal" transform="rotate(90 50 50)" style="transition: transform 0.4s ease;">
+                                                <line x1="50" y1="50" x2="16" y2="50" stroke="#0f172a" stroke-width="3" stroke-linecap="round" />
+                                                <circle cx="50" cy="50" r="5" fill="#0f172a" />
+                                            </g>
+                                        </svg>
+                                    </div>
+                                    <div style="font-size:0.85rem; font-weight:700; color:var(--text-main); margin-top:2px;">
+                                        Status: <span id="labelBensinAwal" style="color:#22c55e;">Penuh (Full / F)</span>
+                                    </div>
+                                </div>
+                                <div class="fuel-level-buttons" id="fuelButtonsAwal">
+                                    <button type="button" class="btn-fuel-opt" data-level="E">E</button>
+                                    <button type="button" class="btn-fuel-opt" data-level="1/4">1/4</button>
+                                    <button type="button" class="btn-fuel-opt" data-level="1/2">1/2</button>
+                                    <button type="button" class="btn-fuel-opt" data-level="3/4">3/4</button>
+                                    <button type="button" class="btn-fuel-opt active" data-level="F">F</button>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="form-group">
                             <label><i class='bx bx-user-check text-primary'></i> Pilih Approver (Leader)</label>
                             <select required id="leader">
@@ -193,39 +259,95 @@
         </div>
     </div>
 
-    <!-- Feedback Modal -->
+    <!-- Feedback Modal (Laporan Pengembalian & Abnormaliti) -->
     <div class="modal-overlay" id="feedbackModal">
-        <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-content" style="max-width: 540px;">
             <div class="modal-header" style="text-align: left; margin-bottom: 20px;">
-                <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-dark);">Laporan Pengembalian</h2>
-                <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 0.9rem;">Mohon isi kondisi kendaraan saat dikembalikan.</p>
+                <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main);">Laporan Pengembalian Kendaraan</h2>
+                <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 0.9rem;">Inspeksi kondisi mobil setelah selesai dipakai.</p>
             </div>
             <form id="feedbackForm" style="text-align: left;">
                 <input type="hidden" id="feedbackBookingId">
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-dark);">Sisa Bensin</label>
-                    <select id="sisaBensin" required style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: inherit; font-size: 0.95rem;">
-                        <option value="" disabled selected>Pilih sisa bensin...</option>
-                        <option value="Penuh (Full)">Penuh (Full)</option>
-                        <option value="3/4 Tangki">3/4 Tangki</option>
-                        <option value="1/2 Tangki">1/2 Tangki</option>
-                        <option value="1/4 Tangki">1/4 Tangki</option>
-                        <option value="Hampir Habis (E)">Hampir Habis (E)</option>
-                    </select>
+                
+                <div class="form-row" style="margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-main);"><i class='bx bx-tachometer text-primary'></i> KM Akhir (Odometer)</label>
+                        <input type="number" id="kmAkhir" placeholder="Contoh: 45380" required style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.95rem;">
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-main);"><i class='bx bx-wallet text-primary'></i> Saldo E-Toll Akhir</label>
+                        <input type="text" id="saldoEtollAkhir" placeholder="Contoh: Rp 45.000" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.95rem;">
+                    </div>
                 </div>
+
+                <!-- Visual Fuel Gauge Inspection Component (Bensin Akhir) -->
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-dark);">Sisa Saldo E-Toll</label>
-                    <input type="text" id="sisaEtol" placeholder="Contoh: Rp 50.000 (Kosongkan jika tidak ada)" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: inherit; font-size: 0.95rem;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-main);"><i class='bx bx-gas-pump text-primary'></i> Pengecekan Bensin Akhir (Setelah Dipakai)</label>
+                    <input type="hidden" id="bensinAkhir" value="3/4" required>
+                    <div class="fuel-selector-container">
+                        <div class="fuel-gauge-visual">
+                            <div class="gauge-svg-container">
+                                <svg viewBox="0 0 100 55" style="width:100%; height:100%;">
+                                    <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#e2e8f0" stroke-width="8" stroke-linecap="round" />
+                                    <path d="M 10 50 A 40 40 0 0 1 30 21" fill="none" stroke="#ef4444" stroke-width="8" />
+                                    <path d="M 30 21 A 40 40 0 0 1 50 10" fill="none" stroke="#f97316" stroke-width="8" />
+                                    <path d="M 50 10 A 40 40 0 0 1 70 21" fill="none" stroke="#eab308" stroke-width="8" />
+                                    <path d="M 70 21 A 40 40 0 0 1 90 50" fill="none" stroke="#22c55e" stroke-width="8" stroke-linecap="round" />
+                                    <text x="8" y="54" font-size="7" font-weight="bold" fill="#ef4444">E</text>
+                                    <text x="87" y="54" font-size="7" font-weight="bold" fill="#22c55e">F</text>
+                                    <!-- Needle -->
+                                    <g id="needleGroupAkhir" transform="rotate(45 50 50)" style="transition: transform 0.4s ease;">
+                                        <line x1="50" y1="50" x2="16" y2="50" stroke="#0f172a" stroke-width="3" stroke-linecap="round" />
+                                        <circle cx="50" cy="50" r="5" fill="#0f172a" />
+                                    </g>
+                                </svg>
+                            </div>
+                            <div style="font-size:0.85rem; font-weight:700; color:var(--text-main); margin-top:2px;">
+                                Status: <span id="labelBensinAkhir" style="color:#84cc16;">3/4 Tangki</span>
+                            </div>
+                        </div>
+                        <div class="fuel-level-buttons" id="fuelButtonsAkhir">
+                            <button type="button" class="btn-fuel-opt" data-level="E">E</button>
+                            <button type="button" class="btn-fuel-opt" data-level="1/4">1/4</button>
+                            <button type="button" class="btn-fuel-opt" data-level="1/2">1/2</button>
+                            <button type="button" class="btn-fuel-opt active" data-level="3/4">3/4</button>
+                            <button type="button" class="btn-fuel-opt" data-level="F">F</button>
+                        </div>
+                    </div>
                 </div>
+
                 <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-dark);">Kondisi Mobil</label>
-                    <textarea id="kondisiMobil" required rows="3" placeholder="Contoh: Aman, bersih, tidak ada lecet." style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: inherit; font-size: 0.95rem; resize: vertical;"></textarea>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-main);"><i class='bx bx-error text-warning'></i> Catatan Abnormaliti</label>
+                    <textarea id="catatanAbnormaliti" required rows="3" placeholder="Tuliskan jika ada abnormaliti/masalah (misal: AC kurang dingin, wiper agak bunyi, bodi bersih, dsb)" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.95rem; resize: vertical;"></textarea>
                 </div>
+
                 <div style="display: flex; gap: 12px; justify-content: flex-end;">
                     <button type="button" class="btn-outline" id="closeFeedbackBtn" style="padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border-color); background: white; cursor: pointer; font-weight: 500;">Batal</button>
-                    <button type="submit" class="btn-primary-solid" id="submitFeedbackBtn" style="padding: 10px 20px; border-radius: 8px; border: none; background: var(--primary-color); color: white; cursor: pointer; font-weight: 500;">Kirim Laporan</button>
+                    <button type="submit" class="btn-primary-solid" id="submitFeedbackBtn" style="padding: 10px 20px; border-radius: 8px; border: none; background: var(--primary); color: white; cursor: pointer; font-weight: 500;">Kirim Laporan</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Official Paper Form Replica Modal -->
+    <div class="modal-overlay" id="officialFormModal">
+        <div class="modal-content" style="max-width: 860px; padding: 16px; background: transparent; box-shadow: none;">
+            <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <span style="font-weight: 700; color: #0f172a; font-size: 1rem;"><i class='bx bx-file text-primary'></i> Form Peminjaman Mobil Operasional Resmi</span>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="window.print()" class="btn-primary-solid" style="padding: 8px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                        <i class='bx bx-printer'></i> Cetak Form / Save PDF
+                    </button>
+                    <button id="closeOfficialFormBtn" style="padding: 8px 16px; background: #e2e8f0; color: #334155; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+
+            <!-- Paper Replica -->
+            <div class="official-form-container" id="officialFormContent">
+                <!-- Injected dynamically by JS -->
+            </div>
         </div>
     </div>
 
