@@ -554,7 +554,7 @@ window.openOfficialFormModal = function(bookingId) {
                     <text x="7" y="54" font-size="7" font-weight="bold" fill="#334155">E</text>
                     <text x="87" y="54" font-size="7" font-weight="bold" fill="#334155">F</text>
                     <g transform="rotate(${angle} 50 50)">
-                        <line x1="50" y1="50" x2="16" y2="50" stroke="#0f172a" stroke-width="3" stroke-linecap="round" />
+                        <line x1="50" y1="50" x2="50" y2="16" stroke="#0f172a" stroke-width="3" stroke-linecap="round" />
                         <circle cx="50" cy="50" r="4.5" fill="#0f172a" />
                     </g>
                 </svg>
