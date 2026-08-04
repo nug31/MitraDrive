@@ -295,6 +295,283 @@ function renderMainTable() {
 
     tbody.innerHTML = '';
     filtered.forEach(booking => {
+        const tr = document.createElement('tr');
+        
+        const badgeClass = getBadgeClass(booking.status);
+        const statusIcon = getStatusIcon(booking.status);
+
+        let actionsHtml = '';
+        if (booking.status !== 'disetujui' && booking.status !== 'selesai' && booking.status !== 'ditolak') {
+            actionsHtml = `
+                <div class="action-buttons">
+                    <button class="btn-approve" onclick="openAdminAction('${booking.id}', 'disetujui')" title="Force Setujui">
+                        <i class='bx bx-check'></i>
+                    </button>
+                    <button class="btn-reject" onclick="openAdminAction('${booking.id}', 'ditolak')" title="Force Tolak">
+                        <i class='bx bx-x'></i>
+                    </button>
+                </div>
+            `;
+        } else if (booking.status === 'disetujui') {
+            actionsHtml = `
+                <div class="action-buttons">
+                    <button class="btn-selesai" onclick="openAdminAction('${booking.id}', 'selesai')" title="Tandai Selesai / Dikembalikan">
+                        <i class='bx bx-check-double'></i> Selesai
+                    </button>
+                    <button class="btn-revert" onclick="openAdminAction('${booking.id}', 'menunggu_pic')" title="Kembalikan ke Awal">
+                        <i class='bx bx-undo'></i> Reset
+                    </button>
+                </div>
+            `;
+        } else {
+            actionsHtml = `
+                <div class="action-buttons">
+                    <button class="btn-revert" onclick="openAdminAction('${booking.id}', 'menunggu_pic')" title="Kembalikan ke Awal">
+                        <i class='bx bx-undo'></i> Reset
+                    </button>
+                </div>
+            `;
+        }
+
+        tr.innerHTML = `
+            <td data-label="Peminjam">
+                <div class="peminjam-cell">
+                    <span class="nama">${booking.peminjam_nama}</span>
+                    <span class="tanggal">Tgl Buat: ${formatDate(booking.created_at, true)}</span>
+                </div>
+            </td>
+            <td data-label="Kendaraan">
+                <div class="kendaraan-cell">
+                    <span class="nama">${booking.kendaraan_nama}</span>
+                    <span class="plat">${booking.kendaraan_plat}</span>
+                </div>
+            </td>
+            <td data-label="Rencana">
+                <div class="rencana-cell">
+                    <span class="tanggal-dinas">${formatDate(booking.tanggal)}</span>
+                    <span class="jam"><i class='bx bx-time-five'></i> ${booking.jam_mulai} - ${booking.jam_selesai}</span>
+                </div>
+            </td>
+            <td data-label="Tujuan">
+                <div class="tujuan-cell">
+                    <div class="lokasi">${booking.tujuan}</div>
+                    <div class="keperluan">${booking.keperluan}</div>
+                </div>
+            </td>
+            <td data-label="Approver">
+                <div class="leader-cell">${booking.leader_nama}</div>
+            </td>
+            <td data-label="Status">
+                <span class="badge-status ${badgeClass}">
+                    <i class='bx ${statusIcon}'></i> ${booking.status.replace('menunggu_', 'menunggu ').replace('_', ' ')}
+                </span>
+                ${booking.catatan_leader ? `<div class="catatan-label mt-1">"${booking.catatan_leader}"</div>` : ''}
+            </td>
+            <td data-label="Aksi Admin">
+                ${actionsHtml}
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function renderFilteredTable(statusFilter, tbodyId) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+
+    const filtered = allBookings.filter(b => b.status === statusFilter);
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-td">Belum ada pengajuan yang ${statusFilter}.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = '';
+    filtered.forEach(booking => {
+        const tr = document.createElement('tr');
+        
+        tr.innerHTML = `
+            <td data-label="Peminjam">
+                <div class="peminjam-cell">
+                    <span class="nama">${booking.peminjam_nama}</span>
+                </div>
+            </td>
+            <td data-label="Kendaraan">
+                <div class="kendaraan-cell">
+                    <span class="nama">${booking.kendaraan_nama}</span>
+                    <span class="plat">${booking.kendaraan_plat}</span>
+                </div>
+            </td>
+            <td data-label="Rencana">
+                <div class="rencana-cell">
+                    <span class="tanggal-dinas">${formatDate(booking.tanggal)}</span>
+                </div>
+            </td>
+            <td data-label="Tujuan">
+                <div class="tujuan-cell">
+                    <div class="lokasi">${booking.tujuan}</div>
+                </div>
+            </td>
+            <td data-label="Approver">
+                <div class="leader-cell">${booking.leader_nama}</div>
+            </td>
+            <td data-label="Catatan">
+                <span class="catatan-label">${booking.catatan_leader || '-'}</span>
+            </td>
+            <td data-label="Aksi">
+                <button class="btn-revert" onclick="openAdminAction('${booking.id}', 'menunggu_pic')" title="Reset Status">
+                    <i class='bx bx-undo'></i> Reset
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+
+// ==========================================
+// MODAL & ACTIONS
+// ==========================================
+function setupModals() {
+    const modal = document.getElementById('actionModal');
+    const form = document.getElementById('actionForm');
+    const btnCancel = document.getElementById('btnCancelAction');
+
+    btnCancel.addEventListener('click', () => {
+        modal.classList.remove('active');
+        form.reset();
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const bookingId = document.getElementById('actionId').value;
+        const targetType = document.getElementById('actionType').value; // disetujui, ditolak, menunggu
+        const catatan = document.getElementById('catatan').value.trim();
+        
+        const btnConfirm = document.getElementById('btnConfirmAction');
+        const originalText = btnConfirm.textContent;
+        btnConfirm.disabled = true;
+        btnConfirm.textContent = 'Menyimpan...';
+
+        try {
+            const updatePayload = {
+                status: targetType,
+                catatan_leader: catatan || null
+            };
+
+            const { error } = await supabase
+                .from('peminjaman_mobil')
+                .update(updatePayload)
+                .eq('id', bookingId);
+
+            if (error) throw error;
+
+            showToast(`Pengajuan berhasil di-set ke: ${targetType}`, 'success');
+            modal.classList.remove('active');
+            form.reset();
+            
+            // Reload table data
+            await loadAllBookings();
+            
+        } catch (err) {
+            console.error('Error updating as admin:', err);
+            showToast('Gagal mengubah status pengajuan.', 'error');
+        } finally {
+            btnConfirm.disabled = false;
+            btnConfirm.textContent = originalText;
+        }
+    });
+}
+
+// Make accessible to inline onclick handlers
+window.openAdminAction = function(id, type) {
+    const modal = document.getElementById('actionModal');
+    const title = document.getElementById('actionTitle');
+    const subtitle = document.getElementById('actionSubtitle');
+    const iconWrapper = document.getElementById('actionIcon');
+    const btnConfirm = document.getElementById('btnConfirmAction');
+    const preview = document.getElementById('bookingPreview');
+    const catatanArea = document.getElementById('catatan');
+    
+    document.getElementById('actionId').value = id;
+    document.getElementById('actionType').value = type;
+
+    // Find booking details for preview
+    const booking = allBookings.find(b => b.id === id);
+    if (booking) {
+        preview.classList.add('visible');
+        preview.innerHTML = `
+            <div class="booking-preview-row"><span class="label">Peminjam</span><span class="value">${booking.peminjam_nama}</span></div>
+            <div class="booking-preview-row"><span class="label">Mobil</span><span class="value">${booking.kendaraan_nama} (${booking.kendaraan_plat})</span></div>
+            <div class="booking-preview-row"><span class="label">Tujuan</span><span class="value">${booking.tujuan}</span></div>
+        `;
+        // Pre-fill catatan if it exists
+        catatanArea.value = booking.catatan_leader || '';
+    }
+
+    if (type === 'disetujui') {
+        title.textContent = 'Setujui Pengajuan (Admin)';
+        subtitle.textContent = 'Setujui pengajuan secara paksa sebagai Admin.';
+        iconWrapper.className = 'action-icon-wrapper icon-approve';
+        iconWrapper.innerHTML = "<i class='bx bx-check-circle'></i>";
+        btnConfirm.className = 'btn-confirm confirm-approve';
+        btnConfirm.style.background = ''; // Reset inline background
+        btnConfirm.textContent = 'Setujui Force';
+    } else if (type === 'ditolak') {
+        title.textContent = 'Tolak Pengajuan (Admin)';
+        subtitle.textContent = 'Tolak pengajuan secara paksa sebagai Admin.';
+        iconWrapper.className = 'action-icon-wrapper icon-reject';
+        iconWrapper.innerHTML = "<i class='bx bx-x-circle'></i>";
+        btnConfirm.className = 'btn-confirm confirm-reject';
+        btnConfirm.style.background = ''; // Reset inline background
+        btnConfirm.textContent = 'Tolak Force';
+    } else if (type === 'selesai') {
+        title.textContent = 'Mobil Dikembalikan (Selesai)';
+        subtitle.textContent = 'Tandai bahwa kendaraan ini telah dikembalikan dan tersedia lagi.';
+        iconWrapper.className = 'action-icon-wrapper text-primary';
+        iconWrapper.style.background = '#eff6ff';
+        iconWrapper.innerHTML = "<i class='bx bx-check-double'></i>";
+        btnConfirm.className = 'btn-confirm confirm-approve';
+        btnConfirm.style.background = '#f97316'; // Use primary brand color (orange)
+        btnConfirm.textContent = 'Tandai Selesai';
+    } else if (type === 'menunggu_pic' || type === 'menunggu_leader') {
+        title.textContent = 'Reset Status Pengajuan';
+        subtitle.textContent = `Kembalikan status pengajuan menjadi "Menunggu PIC Peminjaman".`;
+        iconWrapper.className = 'action-icon-wrapper text-primary';
+        iconWrapper.style.background = '#eff6ff';
+        iconWrapper.innerHTML = "<i class='bx bx-undo'></i>";
+        btnConfirm.className = 'btn-confirm confirm-approve';
+        btnConfirm.style.background = ''; // Reset inline background
+        btnConfirm.textContent = 'Reset Status';
+    }
+
+    modal.classList.add('active');
+}
+
+// ==========================================
+// HELPERS
+// ==========================================
+function getBadgeClass(status) {
+    if (status === 'disetujui') return 'badge-disetujui';
+    if (status === 'selesai') return 'badge-disetujui'; // Re-use green color
+    if (status === 'ditolak') return 'badge-ditolak';
+    if (status === 'menunggu_admin' || status === 'menunggu_koordinator') return 'badge-menunggu-admin';
+    return 'badge-menunggu';
+}
+
+function getStatusIcon(status) {
+    if (status === 'disetujui') return 'bx-check-circle';
+    if (status === 'selesai') return 'bx-check-double';
+    if (status === 'ditolak') return 'bx-x-circle';
+    if (status === 'menunggu_koordinator' || status === 'menunggu_admin') return 'bx-star';
+    if (status === 'menunggu_checker') return 'bx-search-alt';
+    if (status === 'menunggu_pic') return 'bx-clipboard';
+    return 'bx-time-five';
+}
+
+function formatDate(dateStr, includeTime = false) {
+    if (!dateStr) return '';
+    try {
         const date = new Date(dateStr);
         const options = { day: 'numeric', month: 'short', year: 'numeric' };
         let formatted = date.toLocaleDateString('id-ID', options);
