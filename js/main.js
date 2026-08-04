@@ -63,6 +63,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         let displayRole = 'Peminjam';
         if (role === 'admin') displayRole = 'Admin';
         else if (role === 'leader') displayRole = 'Leader';
+        else if (role === 'koordinator_tefa') displayRole = 'Koordinator TEFA';
+        else if (role === 'checker') displayRole = 'Checker';
+        else if (role === 'pic_peminjaman') displayRole = 'PIC Peminjaman';
         
         displayRoleEl.textContent = displayRole;
 
@@ -74,12 +77,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Add link to respective dashboard if admin/leader
         const existingLink = document.getElementById('dashboardLinkBtn');
-        if (!existingLink && (role === 'admin' || role === 'leader')) {
+        const dashboardRoles = ['admin', 'leader', 'koordinator_tefa', 'checker', 'pic_peminjaman'];
+        if (!existingLink && dashboardRoles.includes(role)) {
             const dashboardLink = document.createElement('a');
             dashboardLink.id = 'dashboardLinkBtn';
-            dashboardLink.href = role === 'admin' ? 'admin-dashboard.html' : 'leader-dashboard.html';
+            const dashboardHref = {
+                admin: 'admin-dashboard.html',
+                leader: 'leader-dashboard.html',
+                koordinator_tefa: 'koordinator-dashboard.html',
+                checker: 'checker-dashboard.html',
+                pic_peminjaman: 'pic-dashboard.html'
+            };
+            const dashboardLabel = {
+                admin: "<i class='bx bx-shield'></i> Panel Admin",
+                leader: "<i class='bx bx-check-shield'></i> Panel Leader",
+                koordinator_tefa: "<i class='bx bx-star'></i> Panel Koordinator",
+                checker: "<i class='bx bx-search-alt'></i> Panel Checker",
+                pic_peminjaman: "<i class='bx bx-clipboard'></i> Panel PIC"
+            };
+            dashboardLink.href = dashboardHref[role] || 'index.html';
             dashboardLink.className = 'btn-leader-login';
-            dashboardLink.innerHTML = role === 'admin' ? "<i class='bx bx-shield'></i> Panel Admin" : "<i class='bx bx-check-shield'></i> Panel Leader";
+            dashboardLink.innerHTML = dashboardLabel[role] || '';
             dashboardLink.style.display = 'flex';
             dashboardLink.style.marginRight = '15px';
             document.getElementById('navRight').insertBefore(dashboardLink, navUserProfile);
@@ -297,7 +315,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         bensin_awal: bensinAwal,
                         request_etoll: requestEtoll,
                         saldo_etoll_awal: saldoEtollAwal,
-                        status: 'menunggu_leader'
+                        status: 'menunggu_pic'
                     }
                 ]);
 
@@ -478,12 +496,30 @@ function renderOfficialPaperForm(booking) {
     const saldoEtollAkhir = booking.saldo_etoll_akhir || booking.sisa_etol || '-';
     const abnormaliti = booking.catatan_abnormaliti || booking.kondisi_mobil || 'Tidak ada abnormaliti yang dilaporkan.';
 
+    // Status per approver untuk form resmi
+    const statusApprovedFinal = booking.status === 'disetujui' || booking.status === 'selesai';
+    const statusDitolak = booking.status === 'ditolak';
+    
+    // PIC Peminjaman (Enggar Fata): disetujui jika sudah lewat tahap menunggu_pic
+    const picDone = ['menunggu_checker','menunggu_leader','menunggu_koordinator','menunggu_admin','disetujui','selesai'].includes(booking.status);
+    const picText = statusDitolak && booking.status === 'menunggu_pic' ? '✗ Ditolak' : (picDone ? '✓ Disetujui' : 'Pending');
+    const picColor = statusDitolak && !picDone ? '#ea580c' : (picDone ? '#16a34a' : '#64748b');
+
+    // Checker (Hanif): disetujui jika sudah lewat tahap menunggu_checker  
+    const checkerDone = ['menunggu_leader','menunggu_koordinator','menunggu_admin','disetujui','selesai'].includes(booking.status);
+    const checkerText = checkerDone ? '✓ Disetujui' : 'Pending';
+    const checkerColor = checkerDone ? '#16a34a' : '#64748b';
+
+    // Direct Leader: disetujui jika sudah lewat menunggu_leader
     let statusLeaderText = 'Pending';
-    if (booking.status === 'disetujui' || booking.status === 'selesai') {
-        statusLeaderText = '✓ Disetujui';
-    } else if (booking.status === 'ditolak') {
-        statusLeaderText = '✗ Ditolak';
-    }
+    let statusLeaderColor = '#ea580c';
+    const leaderDone = ['menunggu_koordinator','menunggu_admin','disetujui','selesai'].includes(booking.status);
+    if (leaderDone) { statusLeaderText = '✓ Disetujui'; statusLeaderColor = '#16a34a'; }
+    else if (statusDitolak) { statusLeaderText = '✗ Ditolak'; }
+
+    // Koordinator TEFA (Aprilia): disetujui jika status disetujui/selesai
+    const koordinatorText = statusApprovedFinal ? '✓ Disetujui' : (statusDitolak ? '✗ Ditolak' : 'Pending');
+    const koordinatorColor = statusApprovedFinal ? '#16a34a' : (statusDitolak ? '#ea580c' : '#64748b');
 
     container.innerHTML = `
         <div class="of-header">
@@ -585,32 +621,34 @@ function renderOfficialPaperForm(booking) {
         <table class="of-signatures-table">
             <thead>
                 <tr>
-                    <th style="width:20%;">KOORDINATOR TEFA</th>
-                    <th style="width:20%;">TTD DIRECT LEADER</th>
-                    <th style="width:20%;">TTD CHECKER</th>
                     <th style="width:20%;">TTD PIC PEMINJAMAN</th>
+                    <th style="width:20%;">TTD CHECKER</th>
+                    <th style="width:20%;">TTD DIRECT LEADER</th>
+                    <th style="width:20%;">KOORDINATOR TEFA</th>
                     <th style="width:20%;">TTD PEMINJAM</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>
-                        <div style="font-size:0.65rem; color:#64748b;">(.........................)</div>
-                        <div>tgl .../.../20...</div>
+                        <div style="font-weight:bold; color:${picColor}; font-size:0.75rem;">${picText}</div>
+                        <div style="font-weight:600;">(Enggar Fata)</div>
+                        <div style="font-size:0.7rem; color:#64748b;">${picDone ? 'tgl ' + formatDate(booking.pic_approved_at || booking.tanggal) : 'tgl .../.../20...'}</div>
                     </td>
                     <td>
-                        <div style="font-weight:bold; color:${booking.status==='disetujui'||booking.status==='selesai'?'#16a34a':'#ea580c'}; font-size:0.75rem;">
-                            ${statusLeaderText}
-                        </div>
+                        <div style="font-weight:bold; color:${checkerColor}; font-size:0.75rem;">${checkerText}</div>
+                        <div style="font-weight:600;">(Hanif)</div>
+                        <div style="font-size:0.7rem; color:#64748b;">${checkerDone ? 'tgl ' + formatDate(booking.checker_approved_at || booking.tanggal) : 'tgl .../.../20...'}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight:bold; color:${statusLeaderColor}; font-size:0.75rem;">${statusLeaderText}</div>
                         <div style="font-weight:600;">(${booking.leader_nama})</div>
+                        <div style="font-size:0.7rem; color:#64748b;">${leaderDone ? 'tgl ' + formatDate(booking.leader_approved_at || booking.tanggal) : 'tgl .../.../20...'}</div>
                     </td>
                     <td>
-                        <div style="font-size:0.65rem; color:#64748b;">(.........................)</div>
-                        <div>tgl .../.../20...</div>
-                    </td>
-                    <td>
-                        <div style="font-weight:600;">( Admin GA / PIC )</div>
-                        <div>tgl ${formatDate(booking.tanggal)}</div>
+                        <div style="font-weight:bold; color:${koordinatorColor}; font-size:0.75rem;">${koordinatorText}</div>
+                        <div style="font-weight:600;">(Aprilia Rahayu)</div>
+                        <div style="font-size:0.7rem; color:#64748b;">${statusApprovedFinal ? 'tgl ' + formatDate(booking.koordinator_approved_at || booking.tanggal) : 'tgl .../.../20...'}</div>
                     </td>
                     <td>
                         <div style="font-weight:600;">(${booking.peminjam_nama})</div>
@@ -667,10 +705,22 @@ async function fetchAndRenderUserHistory(userId) {
             let statusIcon = 'bx-time-five';
             let statusText = booking.status;
             
-            if (booking.status === 'menunggu_leader') {
+            if (booking.status === 'menunggu_pic') {
+                badgeClass = 'badge-menunggu';
+                statusIcon = 'bx-time-five';
+                statusText = 'Menunggu PIC Peminjaman';
+            } else if (booking.status === 'menunggu_checker') {
+                badgeClass = 'badge-menunggu';
+                statusIcon = 'bx-search-alt';
+                statusText = 'Menunggu Checker';
+            } else if (booking.status === 'menunggu_leader') {
                 badgeClass = 'badge-menunggu';
                 statusIcon = 'bx-time-five';
                 statusText = 'Menunggu Leader';
+            } else if (booking.status === 'menunggu_koordinator') {
+                badgeClass = 'badge-menunggu-admin';
+                statusIcon = 'bx-star';
+                statusText = 'Menunggu Koordinator TEFA';
             } else if (booking.status === 'menunggu_admin') {
                 badgeClass = 'badge-menunggu-admin';
                 statusIcon = 'bx-time';

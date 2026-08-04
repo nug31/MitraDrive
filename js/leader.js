@@ -6,7 +6,6 @@ const leadersToCreate = [
     { name: "Abdul Munir", email: "abdul.munir@mitradrive.id", password: "MI2100munir" },
     { name: "Hidayat Atori", email: "hidayat.atori@mitradrive.id", password: "MI2100hidayat" },
     { name: "Nuryana Fitriyani", email: "nuryana.fitriyani@mitradrive.id", password: "MI2100nuryana" },
-    { name: "Aprilia Rahayu Wilujeng", email: "aprilia.rahayu@mitradrive.id", password: "MI2100aprilia" },
     { name: "Ryo Maytana", email: "ryo.maytana@mitradrive.id", password: "MI2100ryo" },
     { name: "Okxy Ixganda", email: "okxy.ixganda@mitradrive.id", password: "MI2100okxy" },
     { name: "Astri Afmi Wulandari", email: "astri.afmi@mitradrive.id", password: "MI2100astri" },
@@ -123,6 +122,21 @@ function initLoginPage() {
                     showToast('Login Admin berhasil! Mengalihkan...', 'success');
                     setTimeout(() => {
                         window.location.href = 'admin-dashboard.html';
+                    }, 1000);
+                } else if (role === 'koordinator_tefa') {
+                    showToast('Login Koordinator TEFA berhasil! Mengalihkan...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'koordinator-dashboard.html';
+                    }, 1000);
+                } else if (role === 'checker') {
+                    showToast('Login Checker berhasil! Mengalihkan...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'checker-dashboard.html';
+                    }, 1000);
+                } else if (role === 'pic_peminjaman') {
+                    showToast('Login PIC Peminjaman berhasil! Mengalihkan...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'pic-dashboard.html';
                     }, 1000);
                 } else if (role === 'leader') {
                     showToast('Login Leader berhasil! Mengalihkan...', 'success');
@@ -397,10 +411,22 @@ function filterAndRenderTable() {
         let badgeClass = 'badge-menunggu';
         let statusIcon = 'bx-time-five';
         let statusText = booking.status;
-        if (booking.status === 'menunggu' || booking.status === 'menunggu_leader') {
+         if (booking.status === 'menunggu' || booking.status === 'menunggu_leader') {
             badgeClass = 'badge-menunggu';
             statusIcon = 'bx-time-five';
             statusText = 'Menunggu Leader';
+        } else if (booking.status === 'menunggu_pic') {
+            badgeClass = 'badge-menunggu';
+            statusIcon = 'bx-clipboard';
+            statusText = 'Menunggu PIC Peminjaman';
+        } else if (booking.status === 'menunggu_checker') {
+            badgeClass = 'badge-menunggu';
+            statusIcon = 'bx-search-alt';
+            statusText = 'Menunggu Checker';
+        } else if (booking.status === 'menunggu_koordinator') {
+            badgeClass = 'badge-menunggu-admin';
+            statusIcon = 'bx-star';
+            statusText = 'Menunggu Koordinator TEFA';
         } else if (booking.status === 'menunggu_admin') {
             badgeClass = 'badge-menunggu-admin';
             statusIcon = 'bx-time';
@@ -496,7 +522,7 @@ function filterAndRenderTable() {
         const rejectBtn = tr.querySelector('.btn-reject');
 
         if (approveBtn) {
-            approveBtn.addEventListener('click', () => openActionModal(booking.id, 'menunggu_admin'));
+            approveBtn.addEventListener('click', () => openActionModal(booking.id, 'menunggu_koordinator'));
         }
         if (rejectBtn) {
             rejectBtn.addEventListener('click', () => openActionModal(booking.id, 'ditolak'));
@@ -535,11 +561,20 @@ window.openOfficialFormModal = function(bookingId) {
         const abnormaliti = booking.catatan_abnormaliti || booking.kondisi_mobil || 'Tidak ada abnormaliti yang dilaporkan.';
 
         let statusLeaderText = 'Pending';
-        if (booking.status === 'disetujui' || booking.status === 'selesai') {
-            statusLeaderText = '✓ Disetujui';
-        } else if (booking.status === 'ditolak') {
-            statusLeaderText = '✗ Ditolak';
-        }
+        let statusLeaderColor = '#64748b';
+        const leaderDone = ['menunggu_koordinator','menunggu_admin','disetujui','selesai'].includes(booking.status);
+        if (leaderDone) { statusLeaderText = '✓ Disetujui'; statusLeaderColor = '#16a34a'; }
+        else if (booking.status === 'ditolak') { statusLeaderText = '✗ Ditolak'; statusLeaderColor = '#ea580c'; }
+
+        const picDone = ['menunggu_checker','menunggu_leader','menunggu_koordinator','menunggu_admin','disetujui','selesai'].includes(booking.status);
+        const picText = picDone ? '✓ Disetujui' : 'Pending';
+        const picColor = picDone ? '#16a34a' : '#64748b';
+        const checkerDone = ['menunggu_leader','menunggu_koordinator','menunggu_admin','disetujui','selesai'].includes(booking.status);
+        const checkerText = checkerDone ? '✓ Disetujui' : 'Pending';
+        const checkerColor = checkerDone ? '#16a34a' : '#64748b';
+        const koordinatorDone = ['disetujui','selesai'].includes(booking.status);
+        const koordinatorText = koordinatorDone ? '✓ Disetujui' : 'Pending';
+        const koordinatorColor = koordinatorDone ? '#16a34a' : '#64748b';
 
         const fuelAngles = { 'E': -90, '1/4': -45, '1/2': 0, '3/4': 45, 'F': 90 };
         function getSvg(level) {
@@ -657,32 +692,34 @@ window.openOfficialFormModal = function(bookingId) {
             <table class="of-signatures-table">
                 <thead>
                     <tr>
-                        <th style="width:20%;">KOORDINATOR TEFA</th>
-                        <th style="width:20%;">TTD DIRECT LEADER</th>
-                        <th style="width:20%;">TTD CHECKER</th>
                         <th style="width:20%;">TTD PIC PEMINJAMAN</th>
+                        <th style="width:20%;">TTD CHECKER</th>
+                        <th style="width:20%;">TTD DIRECT LEADER</th>
+                        <th style="width:20%;">KOORDINATOR TEFA</th>
                         <th style="width:20%;">TTD PEMINJAM</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td>
-                            <div style="font-size:0.65rem; color:#64748b;">(.........................)</div>
-                            <div>tgl .../.../20...</div>
+                            <div style="font-weight:bold; color:${picColor}; font-size:0.75rem;">${picText}</div>
+                            <div style="font-weight:600;">(Enggar Fata)</div>
+                            <div style="font-size:0.7rem; color:#64748b;">${picDone ? 'tgl ' + formatDate(booking.pic_approved_at || booking.tanggal) : 'tgl .../.../20...'}</div>
                         </td>
                         <td>
-                            <div style="font-weight:bold; color:${booking.status==='disetujui'||booking.status==='selesai'?'#16a34a':'#ea580c'}; font-size:0.75rem;">
-                                ${statusLeaderText}
-                            </div>
+                            <div style="font-weight:bold; color:${checkerColor}; font-size:0.75rem;">${checkerText}</div>
+                            <div style="font-weight:600;">(Hanif)</div>
+                            <div style="font-size:0.7rem; color:#64748b;">${checkerDone ? 'tgl ' + formatDate(booking.checker_approved_at || booking.tanggal) : 'tgl .../.../20...'}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight:bold; color:${statusLeaderColor}; font-size:0.75rem;">${statusLeaderText}</div>
                             <div style="font-weight:600;">(${booking.leader_nama})</div>
+                            <div style="font-size:0.7rem; color:#64748b;">${leaderDone ? 'tgl ' + formatDate(booking.leader_approved_at || booking.tanggal) : 'tgl .../.../20...'}</div>
                         </td>
                         <td>
-                            <div style="font-size:0.65rem; color:#64748b;">(.........................)</div>
-                            <div>tgl .../.../20...</div>
-                        </td>
-                        <td>
-                            <div style="font-weight:600;">( Admin GA / PIC )</div>
-                            <div>tgl ${formatDate(booking.tanggal)}</div>
+                            <div style="font-weight:bold; color:${koordinatorColor}; font-size:0.75rem;">${koordinatorText}</div>
+                            <div style="font-weight:600;">(Aprilia Rahayu)</div>
+                            <div style="font-size:0.7rem; color:#64748b;">${koordinatorDone ? 'tgl ' + formatDate(booking.koordinator_approved_at || booking.tanggal) : 'tgl .../.../20...'}</div>
                         </td>
                         <td>
                             <div style="font-weight:600;">(${booking.peminjam_nama})</div>
@@ -708,9 +745,9 @@ function openActionModal(id, type) {
     document.getElementById('actionId').value = id;
     document.getElementById('actionType').value = type;
 
-    if (type === 'menunggu_admin') {
+    if (type === 'menunggu_koordinator') {
         title.textContent = 'Setujui Pengajuan';
-        subtitle.textContent = 'Konfirmasi persetujuan untuk peminjaman unit mobil ini. Pengajuan akan diteruskan ke Admin.';
+        subtitle.textContent = 'Konfirmasi persetujuan untuk peminjaman unit mobil ini. Pengajuan akan diteruskan ke Koordinator TEFA.';
         iconWrapper.className = 'action-icon-wrapper icon-approve';
         iconWrapper.innerHTML = "<i class='bx bx-check-circle'></i>";
         btnConfirm.className = 'btn-confirm confirm-approve';
