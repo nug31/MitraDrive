@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .from('peminjaman_mobil')
                 .select('kendaraan_nama, peminjam_nama, status')
                 .gte('tanggal', todayStr)
-                .in('status', ['disetujui', 'menunggu']);
+                .in('status', ['disetujui', 'menunggu', 'menunggu_pic', 'menunggu_checker', 'menunggu_leader', 'menunggu_koordinator', 'menunggu_admin']);
 
             if (!error && data) {
                 // Reset all cars to available first (in case of re-render)
