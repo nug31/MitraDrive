@@ -23,10 +23,10 @@
 -- Email: abdul.munir@mitradrive.id
 -- Password: MI2100munir
 
--- Nama: Hidayat Atori
+-- Nama: Puspita Sari, S.Pd
 -- Jabatan: Humas & Hubind
--- Email: hidayat.atori@mitradrive.id
--- Password: MI2100hidayat
+-- Email: puspita.sari@mitradrive.id
+-- Password: MI2100puspita
 
 -- Nama: Nuryana Fitriyani
 -- Jabatan: Kurikulum

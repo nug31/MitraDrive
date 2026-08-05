@@ -104,7 +104,7 @@ CREATE POLICY "Leader bisa update status"
 -- Wakasek:
 -- elis.rika@mitradrive.id         | MI2100elis
 -- abdul.munir@mitradrive.id       | MI2100munir
--- hidayat.atori@mitradrive.id     | MI2100hidayat
+-- puspita.sari@mitradrive.id     | MI2100puspita
 -- nuryana.fitriyani@mitradrive.id | MI2100nuryana
 -- aprilia.rahayu@mitradrive.id    | MI2100aprilia
 

@@ -97,7 +97,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- ── WAKASEK ──
 SELECT create_leader_account('elis.rika@mitradrive.id',         'MI2100elis',      'Elis Rika Sugiarti');
 SELECT create_leader_account('abdul.munir@mitradrive.id',       'MI2100munir',     'Abdul Munir');
-SELECT create_leader_account('hidayat.atori@mitradrive.id',     'MI2100hidayat',   'Hidayat Atori');
+SELECT create_leader_account('puspita.sari@mitradrive.id',     'MI2100puspita',   'Puspita Sari, S.Pd');
 SELECT create_leader_account('nuryana.fitriyani@mitradrive.id', 'MI2100nuryana',   'Nuryana Fitriyani');
 SELECT create_leader_account('aprilia.rahayu@mitradrive.id',    'MI2100aprilia',   'Aprilia Rahayu Wilujeng');
 

@@ -4,7 +4,7 @@ import { supabase } from './supabase-config.js';
 const leadersToCreate = [
     { name: "Elis Rika Sugiarti", email: "elis.rika@mitradrive.id", password: "MI2100elis" },
     { name: "Abdul Munir", email: "abdul.munir@mitradrive.id", password: "MI2100munir" },
-    { name: "Hidayat Atori", email: "hidayat.atori@mitradrive.id", password: "MI2100hidayat" },
+    { name: "Puspita Sari, S.Pd", email: "puspita.sari@mitradrive.id", password: "MI2100puspita" },
     { name: "Nuryana Fitriyani", email: "nuryana.fitriyani@mitradrive.id", password: "MI2100nuryana" },
     { name: "Aprilia Rahayu Wilujeng", email: "aprilia.rahayu@mitradrive.id", password: "MI2100aprilia" },
     { name: "Ryo Maytana", email: "ryo.maytana@mitradrive.id", password: "MI2100ryo" },
