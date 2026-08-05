@@ -135,12 +135,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
 
         try {
-            // Fetch bookings that are 'disetujui' or 'menunggu' for today or future
-            const todayStr = new Date().toISOString().split('T')[0];
+            // Fetch bookings that are 'disetujui' or 'menunggu' for the selected date
+            const tanggalInput = document.getElementById('tanggal');
+            const targetDate = (tanggalInput && tanggalInput.value) ? tanggalInput.value : new Date().toISOString().split('T')[0];
+            
             const { data, error } = await supabase
                 .from('peminjaman_mobil')
                 .select('kendaraan_nama, peminjam_nama, status')
-                .gte('tanggal', todayStr)
+                .eq('tanggal', targetDate)
                 .in('status', ['disetujui', 'menunggu', 'menunggu_pic', 'menunggu_checker', 'menunggu_leader', 'menunggu_koordinator', 'menunggu_admin']);
 
             if (!error && data) {
@@ -202,6 +204,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await fetchAndRenderCars();
 
+    const tanggalInputEl = document.getElementById('tanggal');
+    if (tanggalInputEl) {
+        tanggalInputEl.addEventListener('change', async () => {
+            selectedCarId = null;
+            await fetchAndRenderCars();
+        });
+    }
+
     // Request E-Toll Toggle Listener
     const requestEtollSelect = document.getElementById('requestEtoll');
     const saldoEtollAwalGroup = document.getElementById('saldoEtollAwalGroup');
@@ -254,8 +264,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     setupFuelSelector('fuelButtonsAwal', 'needleGroupAwal', 'bensinAwal', 'labelBensinAwal');
     setupFuelSelector('fuelButtonsAkhir', 'needleGroupAkhir', 'bensinAkhir', 'labelBensinAkhir');
-
-    await fetchAndRenderCars();
 
     // 4. Form Submit (Pengajuan Peminjaman Baru)
     form.addEventListener('submit', async (e) => {
