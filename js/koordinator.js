@@ -262,6 +262,13 @@ function openActionModal(id, type) {
         iconWrapper.innerHTML = "<i class='bx bx-check-circle'></i>";
         btnConfirm.className = 'btn-confirm confirm-approve';
         btnConfirm.textContent = 'Setujui Final';
+    } else if (type === 'menunggu_koordinator') {
+        title.textContent = 'Setujui sebagai Leader';
+        subtitle.textContent = 'Pengajuan akan diteruskan ke tahap Koordinator TEFA untuk persetujuan selanjutnya.';
+        iconWrapper.className = 'action-icon-wrapper icon-approve';
+        iconWrapper.innerHTML = "<i class='bx bx-check-shield'></i>";
+        btnConfirm.className = 'btn-confirm confirm-approve';
+        btnConfirm.textContent = 'Setujui sbg Leader';
     } else {
         title.textContent = 'Tolak Pengajuan';
         subtitle.textContent = 'Apakah Anda yakin ingin menolak peminjaman ini?';

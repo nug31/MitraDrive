@@ -477,12 +477,14 @@ function generateMiniFuelGaugeSVG(level) {
     const fuelAngles = { 'E': -90, '1/4': -45, '1/2': 0, '3/4': 45, 'F': 90 };
     const angle = fuelAngles[level] !== undefined ? fuelAngles[level] : 90;
     return `
-        <svg viewBox="0 0 100 55" style="width: 75px; height: 42px;">
+        <svg viewBox="0 0 100 55" style="width: 75px; height: 42px; overflow: visible;">
             <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#cbd5e1" stroke-width="7" stroke-linecap="round" />
-            <path d="M 10 50 A 40 40 0 0 1 30 21" fill="none" stroke="#ef4444" stroke-width="7" />
-            <path d="M 30 21 A 40 40 0 0 1 50 10" fill="none" stroke="#f97316" stroke-width="7" />
-            <path d="M 50 10 A 40 40 0 0 1 70 21" fill="none" stroke="#eab308" stroke-width="7" />
-            <path d="M 70 21 A 40 40 0 0 1 90 50" fill="none" stroke="#22c55e" stroke-width="7" stroke-linecap="round" />
+            <path d="M 10 50 A 40 40 0 0 1 21.72 21.72" fill="none" stroke="#ef4444" stroke-width="7" />
+            <path d="M 21.72 21.72 A 40 40 0 0 1 50 10" fill="none" stroke="#f97316" stroke-width="7" />
+            <path d="M 50 10 A 40 40 0 0 1 78.28 21.72" fill="none" stroke="#eab308" stroke-width="7" />
+            <path d="M 78.28 21.72 A 40 40 0 0 1 90 50" fill="none" stroke="#22c55e" stroke-width="7" />
+            <circle cx="10" cy="50" r="3.5" fill="#ef4444" />
+            <circle cx="90" cy="50" r="3.5" fill="#22c55e" />
             <text x="7" y="54" font-size="7" font-weight="bold" fill="#334155">E</text>
             <text x="87" y="54" font-size="7" font-weight="bold" fill="#334155">F</text>
             <g transform="rotate(${angle} 50 50)">
