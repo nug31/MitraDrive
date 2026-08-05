@@ -250,7 +250,7 @@ function openActionModal(id, type) {
 
     if (type === 'menunggu_checker') {
         title.textContent = 'Verifikasi Pengajuan';
-        subtitle.textContent = 'Pengajuan akan diteruskan ke Checker (Hanif) untuk pengecekan.';
+        subtitle.textContent = 'Pengajuan akan diteruskan ke Checker (Hanif / Umar) untuk pengecekan.';
         iconWrapper.className = 'action-icon-wrapper icon-approve';
         iconWrapper.innerHTML = "<i class='bx bx-check-circle'></i>";
         btnConfirm.className = 'btn-confirm confirm-approve';

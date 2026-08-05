@@ -872,7 +872,7 @@ window.openOfficialFormModal = function(bookingId) {
                         </td>
                         <td>
                             <div style="font-weight:bold; color:${checkerColor}; font-size:0.75rem;">${checkerText}</div>
-                            <div style="font-weight:600;">(Hanif)</div>
+                            <div style="font-weight:600;">(Hanif / Umar)</div>
                             <div style="font-size:0.7rem; color:#64748b;">${checkerDone ? 'tgl ' + formatDate(booking.checker_approved_at || booking.tanggal) : 'tgl .../.../20...'}</div>
                         </td>
                         <td>
