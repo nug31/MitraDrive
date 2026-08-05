@@ -62,12 +62,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnConfirm.textContent = 'Menyimpan...';
 
         try {
-            const updatePayload = {
-                status: statusType,
-                catatan_koordinator: catatan || null,
-                status_koordinator: statusType === 'ditolak' ? 'ditolak' : 'disetujui',
-                koordinator_approved_at: new Date().toISOString()
-            };
+            let updatePayload;
+            if (statusType === 'menunggu_koordinator') {
+                // Aprilia approving as Leader → forward to Koordinator stage
+                updatePayload = {
+                    status: 'menunggu_koordinator',
+                    catatan_leader: catatan || null,
+                    status_leader: 'disetujui',
+                    leader_approved_at: new Date().toISOString()
+                };
+            } else {
+                // Normal koordinator approval or rejection
+                updatePayload = {
+                    status: statusType,
+                    catatan_koordinator: catatan || null,
+                    status_koordinator: statusType === 'ditolak' ? 'ditolak' : 'disetujui',
+                    koordinator_approved_at: new Date().toISOString()
+                };
+            }
 
             const { error: updateError } = await supabase
                 .from('peminjaman_mobil')
@@ -76,7 +88,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (updateError) throw updateError;
 
-            showToast(`Pengajuan berhasil ${statusType === 'ditolak' ? 'ditolak' : 'disetujui secara final'}!`, 'success');
+            const msg = statusType === 'ditolak' ? 'ditolak' :
+                        statusType === 'menunggu_koordinator' ? 'disetujui sebagai Leader! Lanjut ke tahap Koordinator TEFA.' :
+                        'disetujui secara final!';
+            showToast(`Pengajuan berhasil ${msg}`, 'success');
             actionModal.classList.remove('active');
             actionForm.reset();
             await loadBookings();
@@ -91,6 +106,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadBookings();
 });
+
+const APRILIA_EMAIL = 'aprilia.rahayu@mitradrive.id';
 
 async function loadBookings() {
     const tableBody = document.getElementById('tableBody');
@@ -113,7 +130,9 @@ async function loadBookings() {
 }
 
 function updateStats() {
-    const pending = allBookings.filter(b => b.status === 'menunggu_koordinator').length;
+    const pendingLeader = allBookings.filter(b => b.status === 'menunggu_leader' && b.leader_email === APRILIA_EMAIL).length;
+    const pendingKoordinator = allBookings.filter(b => b.status === 'menunggu_koordinator').length;
+    const pending = pendingLeader + pendingKoordinator;
     const approved = allBookings.filter(b => ['disetujui','selesai'].includes(b.status)).length;
     const rejected = allBookings.filter(b => b.status === 'ditolak').length;
 
@@ -128,7 +147,12 @@ function filterAndRender() {
     const searchVal = document.getElementById('searchInput').value.toLowerCase();
     const statusVal = document.getElementById('filterStatus').value;
 
-    let filtered = allBookings;
+    // Show: menunggu_koordinator + menunggu_leader where Aprilia is the selected leader
+    let filtered = allBookings.filter(b =>
+        b.status === 'menunggu_koordinator' ||
+        (b.status === 'menunggu_leader' && b.leader_email === APRILIA_EMAIL) ||
+        ['disetujui','selesai','ditolak'].includes(b.status)
+    );
     if (statusVal !== 'all') {
         filtered = filtered.filter(b => b.status === statusVal);
     }
@@ -158,7 +182,21 @@ function filterAndRender() {
                 <div class="action-buttons" style="display:flex; flex-direction:column; gap:4px;">
                     <div style="display:flex; gap:4px;">
                         <button class="btn-approve" data-id="${booking.id}" title="Setujui Secara Final">
-                            <i class='bx bx-check-double'></i> Setujui
+                            <i class='bx bx-check-double'></i> Setujui Final
+                        </button>
+                        <button class="btn-reject" data-id="${booking.id}" title="Tolak">
+                            <i class='bx bx-x'></i> Tolak
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else if (booking.status === 'menunggu_leader' && booking.leader_email === APRILIA_EMAIL) {
+            actionsHtml = `
+                <div class="action-buttons" style="display:flex; flex-direction:column; gap:4px;">
+                    <div style="font-size:0.7rem; color:#f97316; font-weight:600; margin-bottom:4px;"><i class='bx bx-user-check'></i> Persetujuan Leader</div>
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn-approve-leader" data-id="${booking.id}" title="Setujui sbg Leader (lanjut ke tahap Koordinator)" style="background:linear-gradient(135deg,#f97316,#ea580c);color:white;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;gap:4px;">
+                            <i class='bx bx-check-shield'></i> Setujui sbg Leader
                         </button>
                         <button class="btn-reject" data-id="${booking.id}" title="Tolak">
                             <i class='bx bx-x'></i> Tolak
@@ -197,8 +235,10 @@ function filterAndRender() {
         `;
 
         const approveBtn = tr.querySelector('.btn-approve');
+        const approvLeaderBtn = tr.querySelector('.btn-approve-leader');
         const rejectBtn = tr.querySelector('.btn-reject');
         if (approveBtn) approveBtn.addEventListener('click', () => openActionModal(booking.id, 'disetujui'));
+        if (approvLeaderBtn) approvLeaderBtn.addEventListener('click', () => openActionModal(booking.id, 'menunggu_koordinator'));
         if (rejectBtn) rejectBtn.addEventListener('click', () => openActionModal(booking.id, 'ditolak'));
 
         tableBody.appendChild(tr);
