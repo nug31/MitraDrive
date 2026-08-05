@@ -179,7 +179,18 @@ function filterAndRender() {
             <td data-label="Peminjam"><div class="peminjam-cell"><span class="nama">${booking.peminjam_nama}</span><span class="tanggal">Dibuat: ${tglBuat}</span></div></td>
             <td data-label="Kendaraan"><div class="kendaraan-cell"><span class="nama">${booking.kendaraan_nama}</span><span class="plat">${booking.kendaraan_plat}</span></div></td>
             <td data-label="Rencana"><div class="rencana-cell"><span class="tanggal-dinas">${tglDinas}</span><span class="jam"><i class='bx bx-time-five'></i> ${booking.jam_mulai} - ${booking.jam_selesai}</span></div></td>
-            <td data-label="Tujuan"><div class="tujuan-cell"><div class="lokasi">${booking.tujuan}</div><div class="keperluan">${booking.keperluan}</div></div></td>
+            <td data-label="Tujuan">
+                <div class="tujuan-cell">
+                    <div class="lokasi">${booking.tujuan}</div>
+                    <div class="keperluan" style="margin-bottom:8px;">${booking.keperluan}</div>
+                    <div style="font-size: 0.8rem; color: #475569; background: #f1f5f9; padding: 6px; border-radius: 6px;">
+                        <div style="margin-bottom: 2px;"><strong>Driver:</strong> ${booking.driver_nama || booking.peminjam_nama}</div>
+                        <div style="margin-bottom: 2px;"><strong>Penumpang:</strong> ${booking.penumpang || '-'}</div>
+                        <div style="margin-bottom: 2px;"><strong>KM Awal:</strong> ${booking.km_awal || '-'} | <strong>Bensin:</strong> ${booking.bensin_awal || 'F'}</div>
+                        <div><strong>E-Toll:</strong> ${booking.request_etoll || 'Tidak'} ${booking.saldo_etoll_awal ? `(${booking.saldo_etoll_awal})` : ''}</div>
+                    </div>
+                </div>
+            </td>
             <td data-label="Leader"><div class="leader-cell">${booking.leader_nama}</div></td>
             <td data-label="Status"><span class="badge-status ${badgeClass}"><i class='bx ${statusIcon}'></i> ${statusText}</span>${catatanHtml}</td>
             <td data-label="Aksi">${actionsHtml}</td>

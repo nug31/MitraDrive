@@ -355,7 +355,13 @@ function renderMainTable() {
             <td data-label="Tujuan">
                 <div class="tujuan-cell">
                     <div class="lokasi">${booking.tujuan}</div>
-                    <div class="keperluan">${booking.keperluan}</div>
+                    <div class="keperluan" style="margin-bottom:8px;">${booking.keperluan}</div>
+                    <div style="font-size: 0.8rem; color: #475569; background: #f1f5f9; padding: 6px; border-radius: 6px;">
+                        <div style="margin-bottom: 2px;"><strong>Driver:</strong> ${booking.driver_nama || booking.peminjam_nama}</div>
+                        <div style="margin-bottom: 2px;"><strong>Penumpang:</strong> ${booking.penumpang || '-'}</div>
+                        <div style="margin-bottom: 2px;"><strong>KM Awal:</strong> ${booking.km_awal || '-'} | <strong>Bensin:</strong> ${booking.bensin_awal || 'F'}</div>
+                        <div><strong>E-Toll:</strong> ${booking.request_etoll || 'Tidak'} ${booking.saldo_etoll_awal ? `(${booking.saldo_etoll_awal})` : ''}</div>
+                    </div>
                 </div>
             </td>
             <td data-label="Approver">
@@ -410,6 +416,13 @@ function renderFilteredTable(statusFilter, tbodyId) {
             <td data-label="Tujuan">
                 <div class="tujuan-cell">
                     <div class="lokasi">${booking.tujuan}</div>
+                    <div class="keperluan" style="margin-bottom:8px;">${booking.keperluan}</div>
+                    <div style="font-size: 0.8rem; color: #475569; background: #f1f5f9; padding: 6px; border-radius: 6px;">
+                        <div style="margin-bottom: 2px;"><strong>Driver:</strong> ${booking.driver_nama || booking.peminjam_nama}</div>
+                        <div style="margin-bottom: 2px;"><strong>Penumpang:</strong> ${booking.penumpang || '-'}</div>
+                        <div style="margin-bottom: 2px;"><strong>KM Awal:</strong> ${booking.km_awal || '-'} | <strong>Bensin:</strong> ${booking.bensin_awal || 'F'}</div>
+                        <div><strong>E-Toll:</strong> ${booking.request_etoll || 'Tidak'} ${booking.saldo_etoll_awal ? `(${booking.saldo_etoll_awal})` : ''}</div>
+                    </div>
                 </div>
             </td>
             <td data-label="Approver">

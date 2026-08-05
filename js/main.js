@@ -283,12 +283,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         const keperluan = document.getElementById('keperluan').value;
 
         // New inspection fields
-        const driverNama = document.getElementById('driverNama').value || namaPeminjam;
-        const penumpang = document.getElementById('penumpang').value || '-';
-        const kmAwal = document.getElementById('kmAwal').value || '-';
+        const driverNama = document.getElementById('driverNama').value.trim();
+        const penumpang = document.getElementById('penumpang').value.trim();
+        const kmAwal = document.getElementById('kmAwal').value.trim();
         const bensinAwal = document.getElementById('bensinAwal').value || 'F';
         const requestEtoll = document.getElementById('requestEtoll').value || 'Tidak';
-        const saldoEtollAwal = document.getElementById('saldoEtollAwal').value || '-';
+        const saldoEtollAwal = document.getElementById('saldoEtollAwal').value.trim();
+
+        if (!driverNama) { alert('Silakan isi Nama Driver / Pengemudi!'); return; }
+        if (!penumpang) { alert('Silakan isi Daftar Penumpang (atau isi "-" jika tidak ada)!'); return; }
+        if (!kmAwal) { alert('Silakan isi KM Awal (Odometer)!'); return; }
+        if (requestEtoll === 'Ya' && !saldoEtollAwal) { alert('Silakan isi Saldo E-Toll Awal!'); return; }
 
         submitBtn.disabled = true;
         submitBtn.innerHTML = 'Mengirim... <i class="bx bx-loader-alt bx-spin"></i>';
