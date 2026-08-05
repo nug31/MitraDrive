@@ -1,4 +1,4 @@
-:root {
+﻿:root {
     /* Modern Vibrant Colors */
     --bg-main: #f8fafc;
     --bg-panel: #ffffff;
@@ -455,7 +455,7 @@ body {
 .btn-primary-solid:hover { background: #000; }
 
 /* ========================================
-   RESPONSIVE — Tablet (max 992px)
+   RESPONSIVE â€” Tablet (max 992px)
    ======================================== */
 @media (max-width: 992px) {
     .app-grid {
@@ -472,7 +472,7 @@ body {
 }
 
 /* ========================================
-   RESPONSIVE — Mobile (max 768px)
+   RESPONSIVE â€” Mobile (max 768px)
    ======================================== */
 @media (max-width: 768px) {
     .container {
@@ -677,7 +677,7 @@ body {
 }
 
 /* ========================================
-   RESPONSIVE — Small Phone (max 480px)
+   RESPONSIVE â€” Small Phone (max 480px)
    ======================================== */
 @media (max-width: 480px) {
     .app-header h1 {
