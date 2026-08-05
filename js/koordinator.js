@@ -67,17 +67,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Aprilia approving as Leader → forward to Koordinator stage
                 updatePayload = {
                     status: 'menunggu_koordinator',
-                    catatan_leader: catatan || null,
-                    status_leader: 'disetujui',
-                    leader_approved_at: new Date().toISOString()
+                    catatan_leader: catatan || null
                 };
             } else {
                 // Normal koordinator approval or rejection
                 updatePayload = {
-                    status: statusType,
-                    catatan_koordinator: catatan || null,
-                    status_koordinator: statusType === 'ditolak' ? 'ditolak' : 'disetujui',
-                    koordinator_approved_at: new Date().toISOString()
+                    status: statusType
                 };
             }
 
