@@ -989,3 +989,8 @@ body {
     }
 }
 
+@media (max-width: 480px) {
+    .cars-grid {
+        grid-template-columns: 1fr !important;
+    }
+}

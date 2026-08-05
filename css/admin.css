@@ -763,3 +763,39 @@
     font-size: 1.25rem;
     color: #fbbf24;
 }
+@media (max-width: 900px) {
+    /* Table Mobile Card View */
+    .admin-table thead {
+        display: none;
+    }
+    .admin-table tbody tr {
+        display: block;
+        background: white;
+        border: 1px solid #f1f5f9;
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+    .admin-table td {
+        display: flex;
+        padding: 6px 0;
+        border-bottom: none;
+        align-items: flex-start;
+    }
+    .admin-table td::before {
+        content: attr(data-label);
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        min-width: 100px;
+        padding-top: 2px;
+    }
+    .action-buttons {
+        width: 100%;
+        justify-content: flex-start;
+        margin-top: 10px;
+    }
+}
