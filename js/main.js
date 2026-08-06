@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         bensin_awal: bensinAwal,
                         request_etoll: requestEtoll,
                         saldo_etoll_awal: saldoEtollAwal,
-                        status: 'menunggu_pic'
+                        status: 'menunggu_leader'
                     }
                 ]);
 
@@ -515,24 +515,23 @@ function renderOfficialPaperForm(booking) {
     const statusApprovedFinal = booking.status === 'disetujui' || booking.status === 'selesai';
     const statusDitolak = booking.status === 'ditolak';
     
-    // PIC Peminjaman (Enggar Fata): disetujui jika sudah lewat tahap menunggu_pic
-    const picDone = ['menunggu_checker','menunggu_leader','menunggu_koordinator','menunggu_admin','disetujui','selesai'].includes(booking.status);
-    const picText = statusDitolak && booking.status === 'menunggu_pic' ? '✗ Ditolak' : (picDone ? '✓ Disetujui' : 'Pending');
-    const picColor = statusDitolak && !picDone ? '#ea580c' : (picDone ? '#16a34a' : '#64748b');
+    // PIC Peminjaman (Enggar Fata): hanya mengetahui — tidak approve
+    const picText = '✉ Mengetahui';
+    const picColor = '#64748b';
 
-    // Checker (Hanif): disetujui jika sudah lewat tahap menunggu_checker  
-    const checkerDone = ['menunggu_leader','menunggu_koordinator','menunggu_admin','disetujui','selesai'].includes(booking.status);
-    const checkerText = checkerDone ? '✓ Disetujui' : 'Pending';
-    const checkerColor = checkerDone ? '#16a34a' : '#64748b';
+    // Checker (Hanif): hanya mengetahui — tidak approve
+    const checkerText = '✉ Mengetahui';
+    const checkerColor = '#64748b';
 
-    // Direct Leader: disetujui jika sudah lewat menunggu_leader
+    // Direct Leader (Aprilia): approve pertama
     let statusLeaderText = 'Pending';
-    let statusLeaderColor = '#ea580c';
+    let statusLeaderColor = '#64748b';
     const leaderDone = ['menunggu_koordinator','menunggu_admin','disetujui','selesai'].includes(booking.status);
     if (leaderDone) { statusLeaderText = '✓ Disetujui'; statusLeaderColor = '#16a34a'; }
-    else if (statusDitolak) { statusLeaderText = '✗ Ditolak'; }
+    else if (statusDitolak) { statusLeaderText = '✗ Ditolak'; statusLeaderColor = '#ea580c'; }
+    else if (booking.status === 'menunggu_leader') { statusLeaderText = 'Menunggu'; statusLeaderColor = '#f97316'; }
 
-    // Koordinator TEFA (Aprilia): disetujui jika status disetujui/selesai
+    // Koordinator TEFA: approve final
     const koordinatorText = statusApprovedFinal ? '✓ Disetujui' : (statusDitolak ? '✗ Ditolak' : 'Pending');
     const koordinatorColor = statusApprovedFinal ? '#16a34a' : (statusDitolak ? '#ea580c' : '#64748b');
 
@@ -720,15 +719,7 @@ async function fetchAndRenderUserHistory(userId) {
             let statusIcon = 'bx-time-five';
             let statusText = booking.status;
             
-            if (booking.status === 'menunggu_pic') {
-                badgeClass = 'badge-menunggu';
-                statusIcon = 'bx-time-five';
-                statusText = 'Menunggu PIC Peminjaman';
-            } else if (booking.status === 'menunggu_checker') {
-                badgeClass = 'badge-menunggu';
-                statusIcon = 'bx-search-alt';
-                statusText = 'Menunggu Checker';
-            } else if (booking.status === 'menunggu_leader') {
+            if (booking.status === 'menunggu_leader') {
                 badgeClass = 'badge-menunggu';
                 statusIcon = 'bx-time-five';
                 statusText = 'Menunggu Leader';

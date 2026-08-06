@@ -51,44 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         actionForm.reset();
     });
 
-    actionForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const bookingId = document.getElementById('actionId').value;
-        const statusType = document.getElementById('actionType').value;
-        const catatan = document.getElementById('catatan').value.trim();
-
-        const btnConfirm = document.getElementById('btnConfirmAction');
-        btnConfirm.disabled = true;
-        btnConfirm.textContent = 'Menyimpan...';
-
-        try {
-            const updatePayload = {
-                status: statusType,
-                catatan_checker: catatan || null,
-                status_checker: statusType === 'ditolak' ? 'ditolak' : 'disetujui',
-                checker_approved_at: new Date().toISOString()
-            };
-
-            const { error: updateError } = await supabase
-                .from('peminjaman_mobil')
-                .update(updatePayload)
-                .eq('id', bookingId);
-
-            if (updateError) throw updateError;
-
-            showToast(`Pengajuan berhasil ${statusType === 'ditolak' ? 'ditolak' : 'diverifikasi'}!`, 'success');
-            actionModal.classList.remove('active');
-            actionForm.reset();
-            await loadBookings();
-        } catch (err) {
-            console.error('Error updating status:', err);
-            showToast('Gagal memperbarui status pengajuan.', 'error');
-        } finally {
-            btnConfirm.disabled = false;
-            btnConfirm.textContent = 'Konfirmasi';
-        }
-    });
-
     await loadBookings();
 });
 
@@ -113,8 +75,8 @@ async function loadBookings() {
 }
 
 function updateStats() {
-    const pending = allBookings.filter(b => b.status === 'menunggu_checker').length;
-    const approved = allBookings.filter(b => ['menunggu_leader','menunggu_koordinator','disetujui','selesai'].includes(b.status)).length;
+    const pending = allBookings.filter(b => b.status === 'menunggu_leader').length;
+    const approved = allBookings.filter(b => ['menunggu_koordinator','disetujui','selesai'].includes(b.status)).length;
     const rejected = allBookings.filter(b => b.status === 'ditolak').length;
 
     document.getElementById('statTotal').textContent = allBookings.length;
@@ -152,23 +114,8 @@ function filterAndRender() {
         const tglBuat = formatDateTime(booking.created_at);
         const { badgeClass, statusIcon, statusText } = getStatusDisplay(booking.status);
 
-        let actionsHtml = '';
-        if (booking.status === 'menunggu_checker') {
-            actionsHtml = `
-                <div class="action-buttons" style="display:flex; flex-direction:column; gap:4px;">
-                    <div style="display:flex; gap:4px;">
-                        <button class="btn-approve" data-id="${booking.id}" title="Setujui & Teruskan ke Leader">
-                            <i class='bx bx-check'></i> Setujui
-                        </button>
-                        <button class="btn-reject" data-id="${booking.id}" title="Tolak">
-                            <i class='bx bx-x'></i> Tolak
-                        </button>
-                    </div>
-                </div>
-            `;
-        } else {
-            actionsHtml = `<span style="font-size:0.85rem; color:var(--text-muted);">Diproses</span>`;
-        }
+        // Hanya mengetahui — tidak ada tombol approve/tolak
+        const actionsHtml = `<span style="font-size:0.82rem; color:#64748b;"><i class='bx bx-show'></i> Monitoring</span>`;
 
         let catatanHtml = '';
         if (booking.catatan_checker) {
@@ -195,11 +142,6 @@ function filterAndRender() {
             <td data-label="Status"><span class="badge-status ${badgeClass}"><i class='bx ${statusIcon}'></i> ${statusText}</span>${catatanHtml}</td>
             <td data-label="Aksi">${actionsHtml}</td>
         `;
-
-        const approveBtn = tr.querySelector('.btn-approve');
-        const rejectBtn = tr.querySelector('.btn-reject');
-        if (approveBtn) approveBtn.addEventListener('click', () => openActionModal(booking.id, 'menunggu_leader'));
-        if (rejectBtn) rejectBtn.addEventListener('click', () => openActionModal(booking.id, 'ditolak'));
 
         tableBody.appendChild(tr);
     });

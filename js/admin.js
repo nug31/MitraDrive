@@ -318,7 +318,7 @@ function renderMainTable() {
                     <button class="btn-selesai" onclick="openAdminAction('${booking.id}', 'selesai')" title="Tandai Selesai / Dikembalikan">
                         <i class='bx bx-check-double'></i> Selesai
                     </button>
-                    <button class="btn-revert" onclick="openAdminAction('${booking.id}', 'menunggu_pic')" title="Kembalikan ke Awal">
+                    <button class="btn-revert" onclick="openAdminAction('${booking.id}', 'menunggu_leader')" title="Kembalikan ke Awal">
                         <i class='bx bx-undo'></i> Reset
                     </button>
                 </div>
@@ -326,7 +326,7 @@ function renderMainTable() {
         } else {
             actionsHtml = `
                 <div class="action-buttons">
-                    <button class="btn-revert" onclick="openAdminAction('${booking.id}', 'menunggu_pic')" title="Kembalikan ke Awal">
+                    <button class="btn-revert" onclick="openAdminAction('${booking.id}', 'menunggu_leader')" title="Kembalikan ke Awal">
                         <i class='bx bx-undo'></i> Reset
                     </button>
                 </div>
@@ -432,7 +432,7 @@ function renderFilteredTable(statusFilter, tbodyId) {
                 <span class="catatan-label">${booking.catatan_leader || '-'}</span>
             </td>
             <td data-label="Aksi">
-                <button class="btn-revert" onclick="openAdminAction('${booking.id}', 'menunggu_pic')" title="Reset Status">
+                <button class="btn-revert" onclick="openAdminAction('${booking.id}', 'menunggu_leader')" title="Reset Status">
                     <i class='bx bx-undo'></i> Reset
                 </button>
             </td>
@@ -547,14 +547,13 @@ window.openAdminAction = function(id, type) {
         btnConfirm.className = 'btn-confirm confirm-approve';
         btnConfirm.style.background = '#f97316'; // Use primary brand color (orange)
         btnConfirm.textContent = 'Tandai Selesai';
-    } else if (type === 'menunggu_pic' || type === 'menunggu_leader') {
-        title.textContent = 'Reset Status Pengajuan';
-        subtitle.textContent = `Kembalikan status pengajuan menjadi "Menunggu PIC Peminjaman".`;
-        iconWrapper.className = 'action-icon-wrapper text-primary';
-        iconWrapper.style.background = '#eff6ff';
+    } else if (type === 'menunggu_leader') {
+        title.textContent = 'Reset Pengajuan';
+        subtitle.textContent = 'Status akan dikembalikan ke awal (Menunggu Leader). Semua data approval sebelumnya akan dihapus sementara.';
+        iconWrapper.className = 'action-icon-wrapper icon-warning';
         iconWrapper.innerHTML = "<i class='bx bx-undo'></i>";
-        btnConfirm.className = 'btn-confirm confirm-approve';
-        btnConfirm.style.background = ''; // Reset inline background
+        btnConfirm.className = 'btn-confirm confirm-warning';
+        btnConfirm.style.background = '';
         btnConfirm.textContent = 'Reset Status';
     }
 
@@ -576,9 +575,9 @@ function getStatusIcon(status) {
     if (status === 'disetujui') return 'bx-check-circle';
     if (status === 'selesai') return 'bx-check-double';
     if (status === 'ditolak') return 'bx-x-circle';
+    if (status === 'menunggu_leader') return 'bx-time-five';
     if (status === 'menunggu_koordinator' || status === 'menunggu_admin') return 'bx-star';
     if (status === 'menunggu_checker') return 'bx-search-alt';
-    if (status === 'menunggu_pic') return 'bx-clipboard';
     return 'bx-time-five';
 }
 
@@ -723,19 +722,20 @@ window.openOfficialFormModal = function(bookingId) {
         const statusApprovedFinal = booking.status === 'disetujui' || booking.status === 'selesai';
         const statusDitolak = booking.status === 'ditolak';
         
-        const picDone = ['menunggu_checker','menunggu_leader','menunggu_koordinator','menunggu_admin','disetujui','selesai'].includes(booking.status);
-        const picText = statusDitolak && booking.status === 'menunggu_pic' ? '✗ Ditolak' : (picDone ? '✓ Disetujui' : 'Pending');
-        const picColor = statusDitolak && !picDone ? '#ea580c' : (picDone ? '#16a34a' : '#64748b');
+        // PIC Peminjaman (Enggar): hanya mengetahui
+        const picText = '✉ Mengetahui';
+        const picColor = '#64748b';
 
-        const checkerDone = ['menunggu_leader','menunggu_koordinator','menunggu_admin','disetujui','selesai'].includes(booking.status);
-        const checkerText = checkerDone ? '✓ Disetujui' : 'Pending';
-        const checkerColor = checkerDone ? '#16a34a' : '#64748b';
+        // Checker (Hanif): hanya mengetahui
+        const checkerText = '✉ Mengetahui';
+        const checkerColor = '#64748b';
 
         let statusLeaderText = 'Pending';
-        let statusLeaderColor = '#ea580c';
+        let statusLeaderColor = '#64748b';
         const leaderDone = ['menunggu_koordinator','menunggu_admin','disetujui','selesai'].includes(booking.status);
         if (leaderDone) { statusLeaderText = '✓ Disetujui'; statusLeaderColor = '#16a34a'; }
-        else if (statusDitolak) { statusLeaderText = '✗ Ditolak'; }
+        else if (statusDitolak) { statusLeaderText = '✗ Ditolak'; statusLeaderColor = '#ea580c'; }
+        else if (booking.status === 'menunggu_leader') { statusLeaderText = 'Menunggu'; statusLeaderColor = '#f97316'; }
 
         const koordinatorText = statusApprovedFinal ? '✓ Disetujui' : (statusDitolak ? '✗ Ditolak' : 'Pending');
         const koordinatorColor = statusApprovedFinal ? '#16a34a' : (statusDitolak ? '#ea580c' : '#64748b');

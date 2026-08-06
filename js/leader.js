@@ -572,12 +572,12 @@ window.openOfficialFormModal = function(bookingId) {
         if (leaderDone) { statusLeaderText = '✓ Disetujui'; statusLeaderColor = '#16a34a'; }
         else if (booking.status === 'ditolak') { statusLeaderText = '✗ Ditolak'; statusLeaderColor = '#ea580c'; }
 
-        const picDone = ['menunggu_checker','menunggu_leader','menunggu_koordinator','menunggu_admin','disetujui','selesai'].includes(booking.status);
-        const picText = picDone ? '✓ Disetujui' : 'Pending';
-        const picColor = picDone ? '#16a34a' : '#64748b';
-        const checkerDone = ['menunggu_leader','menunggu_koordinator','menunggu_admin','disetujui','selesai'].includes(booking.status);
-        const checkerText = checkerDone ? '✓ Disetujui' : 'Pending';
-        const checkerColor = checkerDone ? '#16a34a' : '#64748b';
+        // PIC Peminjaman (Enggar): hanya mengetahui
+        const picText = '✉ Mengetahui';
+        const picColor = '#64748b';
+        // Checker (Hanif): hanya mengetahui
+        const checkerText = '✉ Mengetahui';
+        const checkerColor = '#64748b';
         const koordinatorDone = ['disetujui','selesai'].includes(booking.status);
         const koordinatorText = koordinatorDone ? '✓ Disetujui' : 'Pending';
         const koordinatorColor = koordinatorDone ? '#16a34a' : '#64748b';
