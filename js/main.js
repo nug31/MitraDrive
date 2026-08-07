@@ -412,11 +412,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                         saldo_etoll_akhir: saldoEtollAkhir,
                         sisa_etol: saldoEtollAkhir,
                         catatan_abnormaliti: catatanAbnormaliti,
-                        kondisi_mobil: catatanAbnormaliti
+                        kondisi_mobil: catatanAbnormaliti,
+                        status: 'selesai'
                     })
                     .eq('id', bookingId);
 
                 if (error) throw error;
+                
+                alert('Berhasil! Mobil telah dikembalikan dan laporan disimpan.');
                 
                 feedbackModal.classList.remove('active');
                 feedbackForm.reset();
@@ -791,8 +794,8 @@ async function fetchAndRenderUserHistory(userId) {
                     
                     <div style="display:flex; flex-direction:column; gap:6px; margin-top: 10px;">
                         ${(booking.status === 'selesai' || booking.status === 'disetujui') && !bensinAkhirStr ? `
-                            <button onclick="openFeedbackModal('${booking.id}')" class="btn-primary-solid" style="padding: 6px 12px; font-size: 0.8rem; width: 100%; border-radius: 6px;">
-                                <i class='bx bx-edit-alt'></i> Beri Laporan / Feedback
+                            <button onclick="openFeedbackModal('${booking.id}')" class="btn-primary-solid" style="padding: 6px 12px; font-size: 0.8rem; width: 100%; border-radius: 6px; background: #16a34a;">
+                                <i class='bx bx-log-in-circle'></i> Kembalikan Mobil
                             </button>
                         ` : ''}
 
