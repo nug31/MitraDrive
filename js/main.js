@@ -1,4 +1,5 @@
 import { supabase } from './supabase-config.js';
+import { notifPengajuanBaru } from './wa-notif.js';
 
 const mockCars = [
     { id: 1, name: 'Hyundai H1', plate: 'B 2459 FGW', status: 'Tersedia', type: 'Van', icon: 'bx-bus', colorClass: 'car-color-1' },
@@ -139,19 +140,38 @@ document.addEventListener('DOMContentLoaded', async () => {
             const tanggalInput = document.getElementById('tanggal');
             const targetDate = (tanggalInput && tanggalInput.value) ? tanggalInput.value : new Date().toISOString().split('T')[0];
             
-            const { data, error } = await supabase
-                .from('peminjaman_mobil')
-                .select('kendaraan_nama, peminjam_nama, status')
-                .eq('tanggal', targetDate)
-                .in('status', ['disetujui', 'menunggu', 'menunggu_pic', 'menunggu_checker', 'menunggu_leader', 'menunggu_koordinator', 'menunggu_admin']);
+            const [bookingsRes, carStatusRes] = await Promise.all([
+                supabase
+                    .from('peminjaman_mobil')
+                    .select('kendaraan_nama, peminjam_nama, status')
+                    .eq('tanggal', targetDate)
+                    .in('status', ['disetujui', 'menunggu', 'menunggu_pic', 'menunggu_checker', 'menunggu_leader', 'menunggu_koordinator', 'menunggu_admin']),
+                supabase
+                    .from('mobil_status')
+                    .select('nama, status')
+            ]);
 
-            if (!error && data) {
-                // Reset all cars to available first (in case of re-render)
-                mockCars.forEach(c => { c.status = 'Tersedia'; c.borrower = null; });
-                
-                data.forEach(booking => {
+            // Reset all cars to available first (in case of re-render)
+            mockCars.forEach(c => { c.status = 'Tersedia'; c.borrower = null; });
+            
+            // 1. Override with mobil_status (Perbaikan etc)
+            if (!carStatusRes.error && carStatusRes.data) {
+                carStatusRes.data.forEach(dbCar => {
+                    if (dbCar.status === 'Perbaikan') {
+                        const car = mockCars.find(c => c.name === dbCar.nama);
+                        if (car) {
+                            car.status = 'Perbaikan';
+                        }
+                    }
+                });
+            }
+
+            // 2. Override with active bookings (Dipakai)
+            if (!bookingsRes.error && bookingsRes.data) {
+                bookingsRes.data.forEach(booking => {
                     const car = mockCars.find(c => c.name === booking.kendaraan_nama);
-                    if (car) {
+                    // Only mark as Dipakai if it's not already marked as Perbaikan
+                    if (car && car.status !== 'Perbaikan') {
                         if (booking.status !== 'selesai') {
                             car.status = 'Dipakai';
                             car.borrower = booking.peminjam_nama;
@@ -161,7 +181,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
         } catch (e) {
-            console.error('Failed to fetch active bookings', e);
+            console.error('Failed to fetch active bookings or car statuses', e);
         }
 
         carsGrid.innerHTML = '';
@@ -172,19 +192,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             card.dataset.id = car.id;
             
             let borrowerHtml = '';
-            if (!isAvailable && car.borrower) {
+            if (car.status === 'Perbaikan') {
+                borrowerHtml = `<div style="font-size: 0.75rem; color: #ef4444; margin-top: 6px;">
+                    <i class='bx bx-wrench'></i> Sedang dalam perbaikan
+                </div>`;
+            } else if (!isAvailable && car.borrower) {
                 const statusText = car.bookingStatus === 'menunggu' ? '(Menunggu)' : '';
                 borrowerHtml = `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
                     <i class='bx bx-user'></i> Dipinjam oleh: <strong>${car.borrower}</strong> ${statusText}
                 </div>`;
             }
 
+            let badgeClass = 'status-used';
+            if (car.status === 'Tersedia') badgeClass = 'status-avail';
+            else if (car.status === 'Perbaikan') badgeClass = 'status-rejected'; // Custom style for maintenance
+
             card.innerHTML = `
                 <div class="car-header">
                     <div class="car-icon-wrapper ${car.colorClass}">
                         <i class='bx ${car.icon}'></i>
                     </div>
-                    <span class="status-badge ${isAvailable ? 'status-avail' : 'status-used'}">${car.status}</span>
+                    <span class="status-badge ${badgeClass}" ${car.status === 'Perbaikan' ? 'style="background: #fee2e2; color: #ef4444;"' : ''}>${car.status}</span>
                 </div>
                 <div class="car-details">
                     <h3>${car.name}</h3>
@@ -333,6 +361,34 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ]);
 
             if (error) throw error;
+
+            // ── Kirim Notifikasi WhatsApp ──────────────────────────
+            // Ambil nomor HP Leader & Koordinator TEFA dari profiles
+            try {
+                const [{ data: leaderProfile }, { data: koordinatorProfile }] = await Promise.all([
+                    supabase.from('profiles').select('phone, full_name').eq('email', leaderEmail).maybeSingle(),
+                    supabase.from('profiles').select('phone').eq('role', 'koordinator_tefa').maybeSingle()
+                ]);
+
+                await notifPengajuanBaru({
+                    leaderPhone:      leaderProfile?.phone || null,
+                    leaderNama:       leaderName,
+                    koordinatorPhone: koordinatorProfile?.phone || null,
+                    peminjamNama:     namaPeminjam,
+                    kendaraanNama:    selectedCar.name,
+                    kendaraanPlat:    selectedCar.plate,
+                    tanggal:          tanggal,
+                    jamMulai:         jamMulai,
+                    jamSelesai:       jamSelesai,
+                    tujuan:           tujuan,
+                    keperluan:        keperluan,
+                    driverNama:       driverNama
+                });
+            } catch (notifErr) {
+                // Notif WA gagal tidak menghalangi proses utama
+                console.warn('[WA Notif] Gagal mengirim notifikasi:', notifErr);
+            }
+            // ───────────────────────────────────────────────────────
 
             document.getElementById('modalCarName').textContent = selectedCar.name;
             document.getElementById('modalLeader').textContent = leaderName;

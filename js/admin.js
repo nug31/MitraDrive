@@ -62,6 +62,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnRefresh.classList.remove('spinning');
     });
 
+    const btnRefreshCars = document.getElementById('btnRefreshCars');
+    if (btnRefreshCars) {
+        btnRefreshCars.addEventListener('click', async () => {
+            btnRefreshCars.classList.add('spinning');
+            await loadMobilStatus();
+            btnRefreshCars.classList.remove('spinning');
+        });
+    }
+
     // Export Excel Button
     const btnExportExcel = document.getElementById('btnExportExcel');
     if (btnExportExcel) {
@@ -95,7 +104,8 @@ function setupNavigation() {
         'overview': { title: 'Overview Dashboard', subtitle: 'Ringkasan seluruh aktivitas peminjaman' },
         'bookings': { title: 'Semua Pengajuan', subtitle: 'Daftar lengkap histori peminjaman' },
         'approved': { title: 'Pengajuan Disetujui', subtitle: 'Daftar peminjaman yang telah disetujui' },
-        'rejected': { title: 'Pengajuan Ditolak', subtitle: 'Daftar peminjaman yang ditolak' }
+        'rejected': { title: 'Pengajuan Ditolak', subtitle: 'Daftar peminjaman yang ditolak' },
+        'cars': { title: 'Manajemen Kendaraan', subtitle: 'Atur status ketersediaan & perbaikan mobil' }
     };
 
     navItems.forEach(item => {
@@ -899,3 +909,85 @@ window.openOfficialFormModal = function(bookingId) {
 
     officialFormModal.classList.add('active');
 };
+
+// ==========================================
+// CAR MANAGEMENT (MANAJEMEN KENDARAAN)
+// ==========================================
+async function loadMobilStatus() {
+    const carsBody = document.getElementById('carsBody');
+    if (!carsBody) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('mobil_status')
+            .select('*')
+            .order('id', { ascending: true });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            carsBody.innerHTML = `<tr><td colspan="4" class="empty-td">Tidak ada data kendaraan ditemukan. Pastikan sudah menjalankan script SQL.</td></tr>`;
+            return;
+        }
+
+        carsBody.innerHTML = '';
+        data.forEach((car, index) => {
+            const tr = document.createElement('tr');
+            
+            let statusBadge = '';
+            let btnAction = '';
+
+            if (car.status === 'Tersedia') {
+                statusBadge = `<span class="badge-status badge-disetujui"><i class='bx bx-check-circle'></i> Tersedia</span>`;
+                btnAction = `<button class="btn-danger-solid" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px;" onclick="toggleMobilStatus(${car.id}, 'Perbaikan')"><i class='bx bx-wrench'></i> Tandai Perbaikan</button>`;
+            } else {
+                statusBadge = `<span class="badge-status badge-ditolak"><i class='bx bx-wrench'></i> Perbaikan</span>`;
+                btnAction = `<button class="btn-primary-solid" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; background: #16a34a;" onclick="toggleMobilStatus(${car.id}, 'Tersedia')"><i class='bx bx-check'></i> Tandai Tersedia</button>`;
+            }
+
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td><strong style="color:var(--text-main);">${car.nama}</strong></td>
+                <td>${statusBadge}</td>
+                <td>${btnAction}</td>
+            `;
+            carsBody.appendChild(tr);
+        });
+
+    } catch (err) {
+        console.error('Error loading mobil status:', err);
+        carsBody.innerHTML = `<tr><td colspan="4" class="empty-td text-danger"><i class='bx bx-error-circle'></i> Gagal memuat data kendaraan.</td></tr>`;
+    }
+}
+
+// Make it global so the onclick handlers can find it
+window.toggleMobilStatus = async function(carId, newStatus) {
+    if (!confirm(`Apakah Anda yakin ingin mengubah status kendaraan ini menjadi "${newStatus}"?`)) {
+        return;
+    }
+
+    try {
+        const { error } = await supabase
+            .from('mobil_status')
+            .update({ status: newStatus, updated_at: new Date().toISOString() })
+            .eq('id', carId);
+
+        if (error) throw error;
+        
+        // Reload data
+        await loadMobilStatus();
+    } catch (err) {
+        console.error('Error updating mobil status:', err);
+        alert('Gagal mengubah status kendaraan: ' + err.message);
+    }
+};
+
+// Also load when page loads if we are on cars page, or just load it anyway
+document.addEventListener('DOMContentLoaded', () => {
+    // Wait a bit to ensure session is checked
+    setTimeout(async () => {
+        if (currentAdminSession) {
+            await loadMobilStatus();
+        }
+    }, 1000);
+});
