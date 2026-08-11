@@ -1,4 +1,5 @@
 import { supabase } from './supabase-config.js';
+import { notifKoordinatorApprove } from './wa-notif.js';
 
 // Predefined leaders data for self-seeding
 const leadersToCreate = [
@@ -279,6 +280,37 @@ async function initDashboardPage() {
                 .eq('id', bookingId);
 
             if (updateError) throw updateError;
+
+            // ── Kirim Notifikasi WA ke Koordinator TEFA jika Disetujui ──
+            if (statusType === 'menunggu_koordinator') {
+                try {
+                    const bookingData = allBookings.find(b => b.id === bookingId);
+                    if (bookingData) {
+                        const { data: koordinatorProfile } = await supabase
+                            .from('profiles')
+                            .select('phone')
+                            .eq('role', 'koordinator_tefa')
+                            .maybeSingle();
+
+                        await notifKoordinatorApprove({
+                            koordinatorPhone: koordinatorProfile?.phone || null,
+                            peminjamNama: bookingData.user_id?.full_name || 'Peminjam',
+                            kendaraanNama: bookingData.car_id?.name || 'Kendaraan',
+                            kendaraanPlat: bookingData.car_id?.plate || '',
+                            tanggal: bookingData.tanggal,
+                            jamMulai: bookingData.jam_mulai,
+                            jamSelesai: bookingData.jam_selesai,
+                            tujuan: bookingData.tujuan,
+                            keperluan: bookingData.keperluan,
+                            leaderNama: bookingData.leader_nama || 'Leader',
+                            driverNama: bookingData.driver_nama || '-'
+                        });
+                    }
+                } catch (waErr) {
+                    console.warn('[WA Notif] Gagal mengirim WA ke koordinator:', waErr);
+                }
+            }
+            // ─────────────────────────────────────────────────────────────
 
             showToast(`Pengajuan berhasil ${statusType}!`, 'success');
             actionModal.classList.remove('active');

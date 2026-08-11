@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - MitraDrive</title>
     <link rel="manifest" href="/manifest.json">
-    <meta name="description" content="Panel Admin MitraDrive untuk mengelola seluruh pengajuan peminjaman kendaraan operasional.">
+    <meta name="description"
+        content="Panel Admin MitraDrive untuk mengelola seluruh pengajuan peminjaman kendaraan operasional.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/admin.css">
 </head>
+
 <body class="admin-body">
 
     <!-- Sidebar -->
@@ -135,7 +139,10 @@
                             </tr>
                         </thead>
                         <tbody id="pendingTableBody">
-                            <tr><td colspan="6" class="loading-td"><i class='bx bx-loader-alt bx-spin'></i> Memuat...</td></tr>
+                            <tr>
+                                <td colspan="6" class="loading-td"><i class='bx bx-loader-alt bx-spin'></i> Memuat...
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -164,7 +171,8 @@
                         <select id="filterAllLeader">
                             <option value="all">Semua Approver</option>
                         </select>
-                        <button id="btnExportExcel" class="btn-primary-solid" style="padding: 8px 16px; font-size: 0.9rem;">
+                        <button id="btnExportExcel" class="btn-primary-solid"
+                            style="padding: 8px 16px; font-size: 0.9rem;">
                             <i class='bx bx-spreadsheet'></i> Export Excel
                         </button>
                     </div>
@@ -183,7 +191,10 @@
                             </tr>
                         </thead>
                         <tbody id="allBookingsBody">
-                            <tr><td colspan="7" class="loading-td"><i class='bx bx-loader-alt bx-spin'></i> Memuat data...</td></tr>
+                            <tr>
+                                <td colspan="7" class="loading-td"><i class='bx bx-loader-alt bx-spin'></i> Memuat
+                                    data...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -210,7 +221,10 @@
                             </tr>
                         </thead>
                         <tbody id="approvedBody">
-                            <tr><td colspan="7" class="loading-td"><i class='bx bx-loader-alt bx-spin'></i> Memuat...</td></tr>
+                            <tr>
+                                <td colspan="7" class="loading-td"><i class='bx bx-loader-alt bx-spin'></i> Memuat...
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -237,7 +251,10 @@
                             </tr>
                         </thead>
                         <tbody id="rejectedBody">
-                            <tr><td colspan="7" class="loading-td"><i class='bx bx-loader-alt bx-spin'></i> Memuat...</td></tr>
+                            <tr>
+                                <td colspan="7" class="loading-td"><i class='bx bx-loader-alt bx-spin'></i> Memuat...
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -263,7 +280,10 @@
                             </tr>
                         </thead>
                         <tbody id="carsBody">
-                            <tr><td colspan="4" class="loading-td"><i class='bx bx-loader-alt bx-spin'></i> Memuat data kendaraan...</td></tr>
+                            <tr>
+                                <td colspan="4" class="loading-td"><i class='bx bx-loader-alt bx-spin'></i> Memuat data
+                                    kendaraan...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -286,7 +306,8 @@
                 <input type="hidden" id="actionId">
                 <input type="hidden" id="actionType">
                 <div class="form-group text-left">
-                    <label for="catatan"><i class='bx bx-comment-detail text-primary'></i> Catatan Admin (Opsional)</label>
+                    <label for="catatan"><i class='bx bx-comment-detail text-primary'></i> Catatan Admin
+                        (Opsional)</label>
                     <textarea id="catatan" placeholder="Tambahkan catatan atau alasan keputusan..." rows="3"></textarea>
                 </div>
                 <div class="modal-buttons mt-6">
@@ -308,13 +329,17 @@
     <!-- Official Paper Form Replica Modal -->
     <div class="modal-overlay" id="officialFormModal">
         <div class="modal-content" style="max-width: 860px; padding: 16px; background: transparent; box-shadow: none;">
-            <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                <span style="font-weight: 700; color: #0f172a; font-size: 1rem;"><i class='bx bx-file text-primary'></i> Form Peminjaman Mobil Operasional Resmi</span>
+            <div class="no-print"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <span style="font-weight: 700; color: #0f172a; font-size: 1rem;"><i class='bx bx-file text-primary'></i>
+                    Form Peminjaman Mobil Operasional Resmi</span>
                 <div style="display: flex; gap: 10px;">
-                    <button onclick="window.print()" class="btn-primary-solid" style="padding: 8px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                    <button onclick="window.print()" class="btn-primary-solid"
+                        style="padding: 8px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
                         <i class='bx bx-printer'></i> Cetak Form / Save PDF
                     </button>
-                    <button id="closeOfficialFormBtn" style="padding: 8px 16px; background: #e2e8f0; color: #334155; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    <button id="closeOfficialFormBtn"
+                        style="padding: 8px 16px; background: #e2e8f0; color: #334155; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
                         Tutup
                     </button>
                 </div>
@@ -332,15 +357,16 @@
     <script type="module" src="js/admin.js"></script>
 
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then(registration => {
-            console.log('ServiceWorker registration successful');
-          }, err => {
-            console.log('ServiceWorker registration failed: ', err);
-          });
-        });
-      }
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful');
+                }, err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
     </script>
 </body>
+
 </html>

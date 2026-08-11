@@ -16,7 +16,7 @@ const DASHBOARD_BASE_URL = 'https://mitradrive.netlify.app';
  */
 export async function sendWhatsAppNotif(phone, message) {
     if (!phone || !message) return null;
-    
+
     // Bersihkan nomor: hapus +, spasi, strip
     const cleanPhone = phone.replace(/[\s+\-]/g, '');
 
@@ -79,11 +79,11 @@ export async function notifPengajuanBaru({
         tanggalFormatted = new Date(tanggal).toLocaleDateString('id-ID', {
             day: 'numeric', month: 'long', year: 'numeric'
         });
-    } catch (_) {}
+    } catch (_) { }
 
     // ── Pesan untuk Direct Leader ──────────────────────────────
     const pesanLeader =
-`🚗 *Pengajuan Peminjaman Kendaraan*
+        `🚗 *Pengajuan Peminjaman Kendaraan*
 📋 Perlu persetujuan Anda
 
 Peminjam   : *${peminjamNama}*
@@ -97,10 +97,40 @@ Keperluan  : ${keperluan}
 Silakan buka dashboard untuk menyetujui atau menolak:
 🔗 ${DASHBOARD_BASE_URL}/leader-dashboard.html`;
 
-    // ── Pesan untuk Koordinator TEFA ──────────────────────────
+    // (Hanya kirim ke Leader terlebih dahulu)
+    const results = await Promise.allSettled([
+        leaderPhone ? sendWhatsAppNotif(leaderPhone, pesanLeader) : Promise.resolve(null)
+    ]);
+
+    return results;
+}
+
+/**
+ * Kirim notifikasi ke Koordinator TEFA setelah Leader setuju
+ */
+export async function notifKoordinatorApprove({
+    koordinatorPhone,
+    peminjamNama,
+    kendaraanNama,
+    kendaraanPlat,
+    tanggal,
+    jamMulai,
+    jamSelesai,
+    tujuan,
+    keperluan,
+    leaderNama,
+    driverNama
+}) {
+    let tanggalFormatted = tanggal;
+    try {
+        tanggalFormatted = new Date(tanggal).toLocaleDateString('id-ID', {
+            day: 'numeric', month: 'long', year: 'numeric'
+        });
+    } catch (_) {}
+
     const pesanKoordinator =
 `📢 *Info Pengajuan Peminjaman Baru*
-(Menunggu persetujuan Direct Leader terlebih dahulu)
+✅ (Telah disetujui oleh Direct Leader: ${leaderNama})
 
 Peminjam   : *${peminjamNama}*
 Driver     : *${driverNama}*
@@ -109,15 +139,12 @@ Tanggal    : *${tanggalFormatted}*
 Jam        : ${jamMulai} – ${jamSelesai}
 Tujuan     : ${tujuan}
 Keperluan  : ${keperluan}
-Direct Leader : ${leaderNama}
 
-Pantau di dashboard:
+Silakan pantau dan setujui di dashboard koordinator:
 🔗 ${DASHBOARD_BASE_URL}/koordinator-dashboard.html`;
 
-    // Kirim ke Leader dan Koordinator secara bersamaan
     const results = await Promise.allSettled([
-        leaderPhone       ? sendWhatsAppNotif(leaderPhone, pesanLeader)           : Promise.resolve(null),
-        koordinatorPhone  ? sendWhatsAppNotif(koordinatorPhone, pesanKoordinator) : Promise.resolve(null),
+        koordinatorPhone ? sendWhatsAppNotif(koordinatorPhone, pesanKoordinator) : Promise.resolve(null),
     ]);
 
     return results;
