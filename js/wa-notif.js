@@ -126,10 +126,10 @@ export async function notifKoordinatorApprove({
         tanggalFormatted = new Date(tanggal).toLocaleDateString('id-ID', {
             day: 'numeric', month: 'long', year: 'numeric'
         });
-    } catch (_) {}
+    } catch (_) { }
 
     const pesanKoordinator =
-`📢 *Info Pengajuan Peminjaman Baru*
+        `📢 *Info Pengajuan Peminjaman Baru*
 ✅ (Telah disetujui oleh Direct Leader: ${leaderNama})
 
 Peminjam   : *${peminjamNama}*

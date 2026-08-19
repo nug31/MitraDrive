@@ -294,9 +294,9 @@ async function initDashboardPage() {
 
                         await notifKoordinatorApprove({
                             koordinatorPhone: koordinatorProfile?.phone || null,
-                            peminjamNama: bookingData.user_id?.full_name || 'Peminjam',
-                            kendaraanNama: bookingData.car_id?.name || 'Kendaraan',
-                            kendaraanPlat: bookingData.car_id?.plate || '',
+                            peminjamNama: bookingData.peminjam_nama || 'Peminjam',
+                            kendaraanNama: bookingData.kendaraan_nama || 'Kendaraan',
+                            kendaraanPlat: bookingData.kendaraan_plat || '',
                             tanggal: bookingData.tanggal,
                             jamMulai: bookingData.jam_mulai,
                             jamSelesai: bookingData.jam_selesai,
