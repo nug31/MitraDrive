@@ -11,7 +11,15 @@
 -- Berikut daftar lengkap akun:
 
 -- ==========================================
--- 1. WAKASEK (Wakil Kepala Sekolah)
+-- 1. BOS (Bantuan Operasional Sekolah)
+-- ==========================================
+-- Nama: Putri Purwaningsih, S.Pd
+-- Jabatan: BOS (Bantuan Operasional Sekolah)
+-- Email: putri.purwaningsih@mitradrive.id
+-- Password: MI2100putri
+
+-- ==========================================
+-- 2. WAKASEK (Wakil Kepala Sekolah)
 -- ==========================================
 -- Nama: Elis Rika Sugiarti
 -- Jabatan: Purchasing
@@ -40,7 +48,7 @@
 
 
 -- ==========================================
--- 2. HOD (Head of Department)
+-- 3. HOD (Head of Department)
 -- ==========================================
 -- Nama: Ryo Maytana
 -- Jabatan: TKI
@@ -83,7 +91,7 @@
 -- Password: MI2100heru
 
 -- ==========================================
--- 3. ADMIN (Persetujuan Akhir)
+-- 4. ADMIN (Persetujuan Akhir)
 -- ==========================================
 -- Nama: Administrator
 -- Jabatan: Admin / GA Utama

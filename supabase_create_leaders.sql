@@ -91,8 +91,11 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================================
--- BUAT SEMUA AKUN LEADER (5 Wakasek + 8 HOD = 13 akun)
+-- BUAT SEMUA AKUN LEADER
 -- ============================================================
+
+-- ── BOS ──
+SELECT create_leader_account('putri.purwaningsih@mitradrive.id', 'MI2100putri', 'Putri Purwaningsih, S.Pd');
 
 -- ── WAKASEK ──
 SELECT create_leader_account('elis.rika@mitradrive.id',         'MI2100elis',      'Elis Rika Sugiarti');

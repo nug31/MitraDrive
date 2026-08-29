@@ -1,8 +1,8 @@
 import { supabase } from './supabase-config.js';
 import { notifKoordinatorApprove } from './wa-notif.js';
 
-// Predefined leaders data for self-seeding
 const leadersToCreate = [
+    { name: "Putri Purwaningsih, S.Pd", email: "putri.purwaningsih@mitradrive.id", password: "MI2100putri" },
     { name: "Elis Rika Sugiarti", email: "elis.rika@mitradrive.id", password: "MI2100elis" },
     { name: "Abdul Munir", email: "abdul.munir@mitradrive.id", password: "MI2100munir" },
     { name: "Puspita Sari, S.Pd", email: "puspita.sari@mitradrive.id", password: "MI2100puspita" },
