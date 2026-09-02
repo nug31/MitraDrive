@@ -4,7 +4,7 @@
 // ============================================================
 
 // ⚠️ Ganti dengan Token Fonnte Anda dari https://md.fonnte.com
-const FONNTE_TOKEN = 'jx1wS1kDnipLgP2dCVSx';
+const FONNTE_TOKEN = 'GngNSq2uZshgtgFiQm7c';
 
 const DASHBOARD_BASE_URL = 'https://mitradrive.netlify.app';
 
